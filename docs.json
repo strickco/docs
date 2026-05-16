@@ -51,7 +51,8 @@
               "recipes/google-sheets",
               "recipes/ranking-monitor"
             ]
-          }        ]
+          }
+        ]
       },
       {
         "tab": "API Reference",
@@ -125,39 +126,22 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Changelog",
+        "href": "/changelog"
+      },
+      {
+        "tab": "Support",
+        "href": "/support"
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Dashboard",
-          "href": "https://app.ranked.ai",
-          "icon": "gauge"
-        },
-        {
-          "anchor": "Changelog",
-          "href": "/changelog",
-          "icon": "clock-rotate-left"
-        },
-        {
-          "anchor": "Support",
-          "href": "/support",
-          "icon": "life-ring"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "https://app.ranked.ai"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
