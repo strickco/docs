@@ -129,11 +129,21 @@
       },
       {
         "tab": "Changelog",
-        "href": "/changelog"
+        "groups": [
+          {
+            "group": "",
+            "pages": ["changelog"]
+          }
+        ]
       },
       {
         "tab": "Support",
-        "href": "/support"
+        "groups": [
+          {
+            "group": "",
+            "pages": ["support"]
+          }
+        ]
       }
     ]
   },
