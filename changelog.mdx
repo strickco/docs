@@ -1,0 +1,62 @@
+---
+title: "Changelog"
+description: "Updates and changes to the Ranked AI API"
+icon: "clock-rotate-left"
+---
+
+## May 2026
+
+### v1.0 — Initial Release
+
+The Ranked AI REST API, MCP integration, and webhook system are now available.
+
+**API Endpoints**
+- 21 REST API endpoints covering keywords, AI visibility, audits, backlinks, content, reports, and webhooks
+- Bearer token authentication with read-only and read+write API key scopes
+- Rate limiting: 100/min, 2,000/hr, 20,000/day per key
+- Pagination up to 1,000 results per request
+
+**Keywords**
+- Positions across Desktop, Mobile, AI Mode, and Google Maps
+- Net change calculation across all four channels
+- Position history with date range filtering
+
+**AI Visibility**
+- Brand visibility tracking across ChatGPT, Claude, Gemini, Perplexity, Grok, and Meta Llama
+- Per-model response history with full citations
+- AI search volume estimates
+
+**Audits**
+- Latest audit results with issue counts by severity
+- Issue details with affected page counts
+
+**Backlinks**
+- Referring domains with domain rank and follow status
+- Anchor text analysis
+- Daily new/lost history
+
+**Content**
+- Content calendar with status and scheduling
+- Full article content retrieval
+- Content preference management
+
+**Reports**
+- Create shareable report links with preset or custom date ranges
+- List and manage existing reports
+
+**Webhooks**
+- 8 event types: content.created, content.status_changed, audit.started, audit.completed, keywords.updated, prompts.updated
+- HMAC-SHA256 signature verification
+- Automatic retry with exponential backoff
+- SSRF protection on webhook URLs
+
+**MCP Integration**
+- 18 MCP tools (10 read, 8 write)
+- Compatible with ChatGPT, Claude, Cursor, and other MCP clients
+- OAuth 2.0 authentication
+
+**Security**
+- API keys hashed at rest (SHA-256)
+- Scope enforcement on all write endpoints
+- Private IP blocklist on webhook URLs
+- Fail-closed rate limiting

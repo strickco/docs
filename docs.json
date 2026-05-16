@@ -43,6 +43,13 @@
               "guides/agency-dashboard",
               "guides/rate-limits"
             ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "changelog",
+              "support"
+            ]
           }
         ]
       },

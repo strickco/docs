@@ -1,0 +1,47 @@
+---
+title: "Support"
+description: "Get help with the Ranked AI API"
+icon: "life-ring"
+---
+
+## Getting help
+
+If you run into issues or have questions about the API, MCP integration, or webhooks, we're here to help.
+
+<Columns cols={2}>
+  <Card title="Live Chat" icon="message" href="https://app.ranked.ai">
+    Chat with our team directly from the Ranked AI dashboard. Look for "Chat With Us" in the sidebar.
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:clients@ranked.ai">
+    Email us at clients@ranked.ai for technical questions or integration help.
+  </Card>
+</Columns>
+
+## Common issues
+
+### 401 Unauthorized
+
+Your API key is missing, invalid, or expired. Check that:
+- The `Authorization` header is set to `Bearer rk_live_your_key`
+- The key hasn't been disabled in Settings > API
+- There are no extra spaces or characters in the key
+
+### 403 Forbidden
+
+Your API key doesn't have the required permissions. This happens when a read-only key tries to perform a write operation (creating webhooks, updating preferences, deleting reports). Create a new key with **Read + Write** access.
+
+### 404 Not Found
+
+The project ID, keyword ID, or other resource UUID doesn't exist or doesn't belong to your account. API keys can only access projects owned by the account that created the key.
+
+### 429 Rate Limited
+
+You've exceeded the rate limit. Check the `meta.rate_limit.reset` value in the response for when you can retry. Consider using webhooks instead of polling to reduce API calls.
+
+### Empty keyword positions
+
+If keyword positions return `null`, the keyword hasn't been scanned yet. New keywords are scanned within 24 hours of being added. Check `last_checked` to see when the keyword was last scanned.
+
+## API status
+
+The API runs on the same infrastructure as the Ranked AI dashboard. If the dashboard is accessible, the API is operational.
