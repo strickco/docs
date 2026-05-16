@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Ranked AI",
   "colors": {
-    "primary": "#09090B",
-    "light": "#09090B",
-    "dark": "#FAFAFA"
+    "primary": "#3F3F46",
+    "light": "#27272A",
+    "dark": "#D4D4D8"
   },
   "favicon": "/favicon.svg",
   "navigation": {
