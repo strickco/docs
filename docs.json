@@ -187,5 +187,6 @@
       "method": "bearer",
       "name": "Authorization"
     }
-  }
+  },
+  "openapi": "api-reference/openapi.json"
 }

@@ -1,0 +1,381 @@
+---
+title: TypeScript SDK
+description: Lightweight TypeScript client for the Ranked AI REST API v1.
+---
+
+# TypeScript SDK
+
+A zero-dependency, single-file TypeScript SDK for the Ranked AI REST API v1. Works anywhere `fetch` is available — Node 18+, Deno, Bun, and modern browsers.
+
+## Installation
+
+The SDK is a single file with no external dependencies. Copy it directly into your project:
+
+```bash
+cp docs/sdk/ranked-ai.ts lib/ranked-ai.ts
+```
+
+Or, when the package is published to npm:
+
+```bash
+npm install @ranked-ai/sdk
+```
+
+Then import the client:
+
+```typescript
+import { RankedAI } from './lib/ranked-ai';
+// or: import { RankedAI } from '@ranked-ai/sdk';
+```
+
+## Quick start
+
+```typescript
+import { RankedAI } from './lib/ranked-ai';
+
+const client = new RankedAI('rai_your_api_key');
+
+// List all projects
+const { data: projects } = await client.listProjects();
+console.log(projects);
+
+// Get keywords for a project
+const { data: keywords } = await client.listKeywords(projects[0].id, {
+  device: 'desktop',
+});
+console.log(keywords);
+```
+
+## Configuration
+
+```typescript
+const client = new RankedAI('rai_your_api_key', {
+  // Override the base URL (useful for staging / self-hosted)
+  baseUrl: 'https://app.ranked.ai',
+});
+```
+
+## Error handling
+
+Every failed request throws a `RankedAIError` with the HTTP status, error code, and request ID:
+
+```typescript
+import { RankedAI, RankedAIError } from './lib/ranked-ai';
+
+const client = new RankedAI('rai_your_api_key');
+
+try {
+  await client.getLatestAudit('invalid-id');
+} catch (err) {
+  if (err instanceof RankedAIError) {
+    console.error(err.status);    // 404
+    console.error(err.code);      // "NOT_FOUND"
+    console.error(err.requestId); // "req_abc123..."
+    console.error(err.message);   // "No completed audit found for this project"
+  }
+}
+```
+
+## Pagination
+
+All list endpoints return paginated responses. The `meta.pagination` object tells you whether more data is available:
+
+```typescript
+const res = await client.listKeywords('proj_1', { limit: 25, offset: 0 });
+
+console.log(res.meta.pagination);
+// { total: 142, limit: 25, offset: 0, has_more: true }
+```
+
+### Manual pagination
+
+```typescript
+let offset = 0;
+const limit = 50;
+let hasMore = true;
+
+while (hasMore) {
+  const { data, meta } = await client.listKeywords('proj_1', { limit, offset });
+  
+  for (const keyword of data) {
+    console.log(keyword.keyword, keyword.desktop_position);
+  }
+
+  hasMore = meta.pagination?.has_more ?? false;
+  offset += limit;
+}
+```
+
+### Auto-pagination iterator
+
+The SDK provides a built-in `paginate` helper that yields every item across all pages:
+
+```typescript
+for await (const keyword of client.paginate(
+  (p) => client.listKeywords('proj_1', p),
+  100, // page size (default: 100)
+)) {
+  console.log(keyword.keyword, keyword.desktop_position);
+}
+```
+
+This works with any paginated method:
+
+```typescript
+// Iterate all prompts
+for await (const prompt of client.paginate(
+  (p) => client.listPrompts('proj_1', p),
+)) {
+  console.log(prompt.prompt, prompt.visibility_percentage);
+}
+
+// Iterate all audit issues
+for await (const issue of client.paginate(
+  (p) => client.getAuditIssues('proj_1', 'audit_1', { ...p, severity: 'critical' }),
+)) {
+  console.log(issue.title, issue.affected_count);
+}
+```
+
+## Endpoints
+
+### Projects
+
+```typescript
+// List all projects
+const { data } = await client.listProjects({ limit: 50, offset: 0 });
+```
+
+### Keywords (Rankings)
+
+```typescript
+// List keywords with optional filters
+const { data } = await client.listKeywords('proj_1', {
+  limit: 100,
+  offset: 0,
+  device: 'desktop',   // 'all' | 'desktop' | 'mobile'
+  date_from: '2025-01-01',
+  date_to: '2025-03-31',
+});
+```
+
+### AI Prompts
+
+```typescript
+// List prompts
+const { data: prompts } = await client.listPrompts('proj_1');
+
+// Get a single prompt with full detail
+const { data: prompt } = await client.getPrompt('proj_1', 'prompt_1');
+console.log(prompt.visibility_percentage, prompt.latest_responses);
+
+// Get prompt response history
+const { data: history } = await client.getPromptHistory('proj_1', 'prompt_1', {
+  date_from: '2025-01-01',
+  limit: 50,
+});
+for (const entry of history.responses) {
+  console.log(entry.model, entry.is_visible, entry.position);
+}
+```
+
+### Audits
+
+```typescript
+// List audits
+const { data: audits } = await client.listAudits('proj_1', {
+  status: 'completed',
+});
+
+// Get the latest completed audit
+const { data: latest } = await client.getLatestAudit('proj_1');
+console.log(latest.total_issues, latest.issues_summary);
+
+// Get issues for a specific audit
+const { data: issues } = await client.getAuditIssues('proj_1', latest.id, {
+  severity: 'critical',
+  status: 'failed',
+});
+```
+
+### Backlinks
+
+```typescript
+// Get aggregated backlink summary
+const { data: summary } = await client.getBacklinkSummary('proj_1');
+console.log(summary.total_backlinks, summary.average_domain_rank);
+
+// List referring domains
+const { data: domains } = await client.listBacklinkDomains('proj_1', {
+  status: 'active',
+  sort_by: 'domain_rank',
+  sort_order: 'desc',
+  limit: 50,
+});
+```
+
+### Content
+
+```typescript
+// List content calendar items
+const { data: items } = await client.listContent('proj_1', {
+  status: 'Published',
+  date_from: '2025-01-01',
+  date_to: '2025-06-30',
+});
+```
+
+### Reports
+
+```typescript
+// List existing reports
+const { data: reports } = await client.listReports('proj_1');
+
+// Create a new report
+const { data: report } = await client.createReport('proj_1', {
+  title: 'Monthly SEO Report — May 2025',
+  date_range: '30days',
+  config: {
+    include_rankings: true,
+    include_audits: true,
+    include_prompts: true,
+    include_backlinks: true,
+    include_content: false,
+  },
+});
+console.log(report.share_url); // https://agencyreport.ai/r/...
+
+// Delete a report
+await client.deleteReport('proj_1', report.id);
+```
+
+### Webhooks
+
+```typescript
+// List webhooks
+const { data: hooks } = await client.listWebhooks({ project_id: 'proj_1' });
+
+// Create a webhook
+const { data: hook } = await client.createWebhook({
+  project_id: 'proj_1',
+  url: 'https://example.com/webhooks/ranked',
+  events: ['audit.completed', 'keywords.updated'],
+  name: 'Production webhook',
+});
+// Save hook.secret — it is only returned once!
+console.log(hook.secret); // whsec_...
+
+// Test a webhook
+const { data: result } = await client.testWebhook(hook.id);
+console.log(result.success);
+
+// Delete a webhook
+await client.deleteWebhook(hook.id);
+```
+
+## Webhook signature verification
+
+When your server receives a webhook, verify the signature to confirm it was sent by Ranked AI. The signature is in the `X-Webhook-Signature` header as `sha256=<hex>`.
+
+### Node.js / Bun
+
+```typescript
+import { RankedAI } from './lib/ranked-ai';
+
+// In your webhook handler (e.g. Express)
+app.post('/webhooks/ranked', (req, res) => {
+  const signature = req.headers['x-webhook-signature'] as string;
+  const rawBody = req.body; // must be the raw string, not parsed JSON
+
+  const isValid = RankedAI.verifyWebhookSignature(rawBody, signature, process.env.WEBHOOK_SECRET!);
+
+  if (!isValid) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(rawBody);
+  console.log('Received event:', event.event, event.data);
+
+  res.status(200).send('OK');
+});
+```
+
+### Edge runtimes (Cloudflare Workers, Vercel Edge)
+
+Use the async variant which uses the Web Crypto API:
+
+```typescript
+import { RankedAI } from './lib/ranked-ai';
+
+export default {
+  async fetch(request: Request) {
+    const signature = request.headers.get('x-webhook-signature') ?? '';
+    const body = await request.text();
+
+    const isValid = await RankedAI.verifyWebhookSignatureAsync(body, signature, WEBHOOK_SECRET);
+
+    if (!isValid) {
+      return new Response('Invalid signature', { status: 401 });
+    }
+
+    const event = JSON.parse(body);
+    // Handle the event...
+
+    return new Response('OK', { status: 200 });
+  },
+};
+```
+
+### Webhook event types
+
+| Event | Description |
+|---|---|
+| `content.created` | A new content item was added to the calendar |
+| `content.updated` | A content item was modified |
+| `content.scheduled` | A content item was scheduled |
+| `content.status_changed` | A content item's status changed |
+| `audit.completed` | A site audit finished crawling |
+| `audit.started` | A site audit started |
+| `keywords.updated` | Keyword ranking positions were refreshed |
+| `prompts.updated` | AI prompt visibility data was refreshed |
+
+### Webhook payload shape
+
+```json
+{
+  "event": "audit.completed",
+  "timestamp": "2025-05-16T10:30:00.000Z",
+  "project_id": "proj_abc123",
+  "data": {
+    "audit_id": "audit_xyz",
+    "total_issues": 23,
+    "critical_issues": 2
+  }
+}
+```
+
+## TypeScript types
+
+All types are exported from the SDK module and can be used directly:
+
+```typescript
+import type {
+  Project,
+  Keyword,
+  Prompt,
+  PromptDetail,
+  PromptHistoryEntry,
+  Audit,
+  AuditDetail,
+  AuditIssue,
+  BacklinkSummary,
+  ReferringDomain,
+  ContentItem,
+  Report,
+  Webhook,
+  WebhookWithSecret,
+  PaginatedResponse,
+  ApiSuccessResponse,
+  RankedAIOptions,
+} from './lib/ranked-ai';
+```

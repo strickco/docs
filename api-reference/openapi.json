@@ -1,0 +1,2111 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ranked AI REST API",
+    "version": "1.0.0",
+    "description": "Public REST API for Ranked AI — an SEO and AI visibility platform. Manage projects, track keyword rankings, monitor AI prompt visibility, run site audits, analyze backlinks, manage content calendars, generate reports, and configure webhooks.",
+    "contact": {
+      "name": "Ranked AI Support",
+      "url": "https://ranked.ai"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://app.ranked.ai/api/v1",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    { "name": "Projects", "description": "Manage SEO projects" },
+    { "name": "Keywords", "description": "Track keyword rankings across devices" },
+    { "name": "AI Visibility", "description": "Monitor AI prompt visibility and citations" },
+    { "name": "Audits", "description": "Run and review SEO site audits" },
+    { "name": "Backlinks", "description": "Analyze backlink profiles and referring domains" },
+    { "name": "Content", "description": "Manage content calendar and preferences" },
+    { "name": "Reports", "description": "Generate and manage shareable reports" },
+    { "name": "Webhooks", "description": "Configure webhook subscriptions for event notifications" }
+  ],
+  "paths": {
+    "/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "List projects",
+        "description": "Returns all projects owned by the API key holder.",
+        "tags": ["Projects"],
+        "parameters": [
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Project" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/rankings/keywords": {
+      "get": {
+        "operationId": "listKeywords",
+        "summary": "List tracked keywords",
+        "description": "Returns tracked keywords with position data for a project.",
+        "tags": ["Keywords"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          { "$ref": "#/components/parameters/DateFromParam" },
+          { "$ref": "#/components/parameters/DateToParam" },
+          {
+            "name": "device",
+            "in": "query",
+            "description": "Filter keywords by device type.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "desktop", "mobile"],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/KeywordRanking" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/rankings/keywords/{keywordId}/history": {
+      "get": {
+        "operationId": "getKeywordHistory",
+        "summary": "Get keyword position history",
+        "description": "Returns historical position data for a specific keyword. Defaults to the last 90 days if no date range is specified.",
+        "tags": ["Keywords"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "keywordId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the tracked keyword.",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/DateFromParam" },
+          { "$ref": "#/components/parameters/DateToParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/KeywordHistoryResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/prompts": {
+      "get": {
+        "operationId": "listPrompts",
+        "summary": "List AI prompts",
+        "description": "Returns AI prompts with visibility and response data for a project.",
+        "tags": ["AI Visibility"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Prompt" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/prompts/{promptId}": {
+      "get": {
+        "operationId": "getPrompt",
+        "summary": "Get prompt detail",
+        "description": "Returns detailed data for a specific AI prompt including per-model responses.",
+        "tags": ["AI Visibility"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "promptId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the AI prompt.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PromptDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/prompts/{promptId}/history": {
+      "get": {
+        "operationId": "getPromptHistory",
+        "summary": "Get prompt response history",
+        "description": "Returns response history from each AI model for a specific prompt. Defaults to the last 90 days.",
+        "tags": ["AI Visibility"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "promptId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the AI prompt.",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          { "$ref": "#/components/parameters/DateFromParam" },
+          { "$ref": "#/components/parameters/DateToParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PromptHistoryResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/audits": {
+      "get": {
+        "operationId": "listAudits",
+        "summary": "List audits",
+        "description": "Returns a list of SEO audit tasks for a project.",
+        "tags": ["Audits"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter audits by status.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "pending", "crawling", "processing", "completed", "failed"],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AuditSummary" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/audits/latest": {
+      "get": {
+        "operationId": "getLatestAudit",
+        "summary": "Get latest completed audit",
+        "description": "Returns the most recent completed audit for a project, including issue summary with dismissed (passed) vs active (failed) counts.",
+        "tags": ["Audits"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/AuditDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/audits/{auditId}/issues": {
+      "get": {
+        "operationId": "listAuditIssues",
+        "summary": "List audit issues",
+        "description": "Returns issues for a specific audit. Issues are sorted by severity (critical > warning > notice) then by affected count descending. Dismissed issues are returned with status `passed`.",
+        "tags": ["Audits"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "auditId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the audit.",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          {
+            "name": "severity",
+            "in": "query",
+            "description": "Filter issues by severity.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "critical", "warning", "notice"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter issues by status.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "passed", "failed"],
+              "default": "all"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AuditIssue" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/backlinks": {
+      "get": {
+        "operationId": "listBacklinks",
+        "summary": "List tracked backlinks",
+        "description": "Returns tracked backlinks overview for a project with summary metrics from the latest backlink check.",
+        "tags": ["Backlinks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/BacklinkOverview" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/backlinks/summary": {
+      "get": {
+        "operationId": "getBacklinksSummary",
+        "summary": "Get backlinks summary",
+        "description": "Returns aggregated backlink metrics for the entire project across all tracked domains.",
+        "tags": ["Backlinks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/BacklinksSummary" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/backlinks/domains": {
+      "get": {
+        "operationId": "listReferringDomains",
+        "summary": "List referring domains",
+        "description": "Returns referring domains for the project's tracked backlinks with pagination and sorting.",
+        "tags": ["Backlinks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter referring domains by status.",
+            "schema": {
+              "type": "string",
+              "enum": ["all", "active", "lost"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Field to sort results by.",
+            "schema": {
+              "type": "string",
+              "enum": ["domain_rank", "backlinks_count", "first_seen", "last_seen"],
+              "default": "domain_rank"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Sort direction.",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/ReferringDomain" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/backlinks/history": {
+      "get": {
+        "operationId": "getBacklinksHistory",
+        "summary": "Get backlinks history",
+        "description": "Returns historical backlink data for the project. Defaults to the last 90 days if no date range is specified.",
+        "tags": ["Backlinks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/DateFromParam" },
+          { "$ref": "#/components/parameters/DateToParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/BacklinkHistoryResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/backlinks/anchors": {
+      "get": {
+        "operationId": "getAnchorTexts",
+        "summary": "Get anchor text analysis",
+        "description": "Returns anchor text distribution for the project's backlinks, sorted by count descending.",
+        "tags": ["Backlinks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/AnchorsResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/content": {
+      "get": {
+        "operationId": "listContent",
+        "summary": "List content items",
+        "description": "Returns content calendar items for a project. Without date filters, returns items scheduled up to 7 days in the future.",
+        "tags": ["Content"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          { "$ref": "#/components/parameters/DateFromParam" },
+          { "$ref": "#/components/parameters/DateToParam" },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter content by status name (e.g. Draft, Published).",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/ContentItem" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/content/{contentId}": {
+      "get": {
+        "operationId": "getContent",
+        "summary": "Get content detail",
+        "description": "Returns details for a specific content item including the content body and metadata.",
+        "tags": ["Content"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "contentId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the content item.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/ContentDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/content/preferences": {
+      "get": {
+        "operationId": "getContentPreferences",
+        "summary": "Get content preferences",
+        "description": "Returns content and publishing preferences for a project.",
+        "tags": ["Content"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/ContentPreferences" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "patch": {
+        "operationId": "updateContentPreferences",
+        "summary": "Update content preferences",
+        "description": "Updates content and publishing preferences for a project. Requires `write:all` scope.",
+        "tags": ["Content"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateContentPreferencesRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/ContentPreferences" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/reports": {
+      "get": {
+        "operationId": "listReports",
+        "summary": "List reports",
+        "description": "Returns generated report links for a project.",
+        "tags": ["Reports"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/ReportLink" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "post": {
+        "operationId": "createReport",
+        "summary": "Create a report",
+        "description": "Triggers report generation and returns a shareable link. Report links default to the agencyreport.ai domain. Requires `write:all` scope.",
+        "tags": ["Reports"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateReportRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Report created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/CreateReportResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/projects/{projectId}/reports/{reportId}": {
+      "get": {
+        "operationId": "getReport",
+        "summary": "Get report detail",
+        "description": "Returns details for a specific report including its configuration.",
+        "tags": ["Reports"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "description": "The short report ID (nanoid), not the database UUID.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/ReportDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteReport",
+        "summary": "Delete a report",
+        "description": "Soft-deletes a report link. Requires `write:all` scope.",
+        "tags": ["Reports"],
+        "parameters": [
+          { "$ref": "#/components/parameters/ProjectIdParam" },
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "description": "The short report ID (nanoid), not the database UUID.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "message": { "type": "string", "example": "Report deleted successfully" },
+                            "report_id": { "type": "string" }
+                          },
+                          "required": ["message", "report_id"]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/webhooks": {
+      "get": {
+        "operationId": "listWebhooks",
+        "summary": "List webhooks",
+        "description": "Returns webhook subscriptions for the authenticated user. Optionally filter by project.",
+        "tags": ["Webhooks"],
+        "parameters": [
+          { "$ref": "#/components/parameters/LimitParam" },
+          { "$ref": "#/components/parameters/OffsetParam" },
+          {
+            "name": "project_id",
+            "in": "query",
+            "description": "Filter webhooks by project UUID.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Webhook" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "post": {
+        "operationId": "createWebhook",
+        "summary": "Create a webhook",
+        "description": "Creates a new webhook subscription. The webhook `secret` is only returned on creation — store it securely. Requires `write:all` scope. The URL must use HTTPS and must not point to private or internal addresses.",
+        "tags": ["Webhooks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWebhookRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/WebhookWithSecret" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/webhooks/{webhookId}": {
+      "get": {
+        "operationId": "getWebhook",
+        "summary": "Get webhook detail",
+        "description": "Returns details for a specific webhook subscription.",
+        "tags": ["Webhooks"],
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the webhook.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/WebhookDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "patch": {
+        "operationId": "updateWebhook",
+        "summary": "Update a webhook",
+        "description": "Updates a webhook subscription. Re-enabling a webhook resets its consecutive failure count. Requires `write:all` scope.",
+        "tags": ["Webhooks"],
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the webhook.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateWebhookRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Webhook updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/WebhookDetail" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteWebhook",
+        "summary": "Delete a webhook",
+        "description": "Permanently deletes a webhook subscription and its delivery logs. Requires `write:all` scope.",
+        "tags": ["Webhooks"],
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the webhook.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "message": { "type": "string", "example": "Webhook deleted successfully" },
+                            "id": { "type": "string", "format": "uuid" }
+                          },
+                          "required": ["message", "id"]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/webhooks/{webhookId}/test": {
+      "post": {
+        "operationId": "testWebhook",
+        "summary": "Test a webhook",
+        "description": "Sends a test webhook payload to verify the endpoint is reachable and responding. The webhook must be active. Requires `write:all` scope.",
+        "tags": ["Webhooks"],
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "description": "UUID of the webhook.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/TestWebhookResponse" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key",
+        "description": "API key passed as a Bearer token in the Authorization header."
+      }
+    },
+    "parameters": {
+      "ProjectIdParam": {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "description": "UUID of the project.",
+        "schema": { "type": "string", "format": "uuid" }
+      },
+      "LimitParam": {
+        "name": "limit",
+        "in": "query",
+        "description": "Maximum number of items to return.",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 50 }
+      },
+      "OffsetParam": {
+        "name": "offset",
+        "in": "query",
+        "description": "Number of items to skip for pagination.",
+        "schema": { "type": "integer", "minimum": 0, "default": 0 }
+      },
+      "DateFromParam": {
+        "name": "date_from",
+        "in": "query",
+        "description": "Start of date range filter (ISO 8601 format, YYYY-MM-DD).",
+        "schema": { "type": "string", "format": "date" }
+      },
+      "DateToParam": {
+        "name": "date_to",
+        "in": "query",
+        "description": "End of date range filter (ISO 8601 format, YYYY-MM-DD).",
+        "schema": { "type": "string", "format": "date" }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication failed — missing or invalid API key.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Insufficient permissions or project not accessible.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded.",
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds until the rate limit resets.",
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Limit": {
+            "description": "Request limit per window.",
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Remaining requests in current window.",
+            "schema": { "type": "integer" }
+          },
+          "X-RateLimit-Reset": {
+            "description": "Unix timestamp when the rate limit resets.",
+            "schema": { "type": "integer" }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "SuccessEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "data": {},
+          "meta": { "$ref": "#/components/schemas/ResponseMeta" }
+        },
+        "required": ["success", "data", "meta"]
+      },
+      "ResponseMeta": {
+        "type": "object",
+        "properties": {
+          "request_id": { "type": "string", "description": "Unique request identifier.", "example": "req_a1b2c3d4e5f6" },
+          "rate_limit": { "$ref": "#/components/schemas/RateLimit" },
+          "pagination": { "$ref": "#/components/schemas/Pagination" }
+        },
+        "required": ["request_id"]
+      },
+      "RateLimit": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer", "description": "Maximum requests per window." },
+          "remaining": { "type": "integer", "description": "Remaining requests in current window." },
+          "reset": { "type": "integer", "description": "Unix timestamp when the rate limit resets." }
+        },
+        "required": ["limit", "remaining", "reset"]
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": { "type": "integer", "description": "Total number of matching items." },
+          "limit": { "type": "integer", "description": "Page size used for this request." },
+          "offset": { "type": "integer", "description": "Number of items skipped." },
+          "has_more": { "type": "boolean", "description": "Whether more items exist beyond the current page." }
+        },
+        "required": ["total", "limit", "offset", "has_more"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "const": false },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "UNAUTHORIZED",
+                  "INVALID_API_KEY",
+                  "API_KEY_EXPIRED",
+                  "API_KEY_REVOKED",
+                  "FORBIDDEN",
+                  "PROJECT_NOT_FOUND",
+                  "PROJECT_NOT_ACCESSIBLE",
+                  "PROJECT_INACTIVE",
+                  "RATE_LIMITED",
+                  "VALIDATION_ERROR",
+                  "INVALID_REQUEST",
+                  "NOT_FOUND",
+                  "RESOURCE_NOT_FOUND",
+                  "INTERNAL_ERROR",
+                  "SERVICE_UNAVAILABLE"
+                ]
+              },
+              "message": { "type": "string" },
+              "details": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "required": ["code", "message"]
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "request_id": { "type": "string" }
+            },
+            "required": ["request_id"]
+          }
+        },
+        "required": ["success", "error", "meta"]
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["trial", "active", "past_due"] },
+          "serviceType": { "type": "string" },
+          "websiteUrl": { "type": "string", "format": "uri", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "status", "serviceType", "websiteUrl", "createdAt"]
+      },
+      "KeywordRanking": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "keyword": { "type": "string" },
+          "location": { "type": "string" },
+          "location_code": { "type": "integer" },
+          "target_url": { "type": "string", "nullable": true },
+          "device": { "type": "string" },
+          "language_code": { "type": "string" },
+          "desktop_position": { "type": "integer", "nullable": true },
+          "mobile_position": { "type": "integer", "nullable": true },
+          "ai_mode_position": { "type": "integer", "nullable": true },
+          "maps_position": { "type": "integer", "nullable": true },
+          "desktop_url": { "type": "string", "nullable": true },
+          "mobile_url": { "type": "string", "nullable": true },
+          "ai_mode_url": { "type": "string", "nullable": true },
+          "maps_url": { "type": "string", "nullable": true },
+          "featured_snippet": { "type": "boolean" },
+          "local_pack_position": { "type": "integer", "nullable": true },
+          "monthly_search_volume": { "type": "integer", "nullable": true },
+          "net_change": { "type": "integer", "description": "Sum of position changes across all device types in the date range. Positive = improved." },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "last_checked": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "keyword", "location", "location_code", "target_url", "device",
+          "language_code", "desktop_position", "mobile_position", "ai_mode_position",
+          "maps_position", "desktop_url", "mobile_url", "ai_mode_url", "maps_url",
+          "featured_snippet", "local_pack_position", "monthly_search_volume",
+          "net_change", "tags", "last_checked", "created_at"
+        ]
+      },
+      "KeywordHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "keyword_id": { "type": "string", "format": "uuid" },
+          "keyword": { "type": "string" },
+          "location": { "type": "string" },
+          "location_code": { "type": "integer" },
+          "history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PositionHistoryEntry" }
+          },
+          "summary": { "$ref": "#/components/schemas/KeywordHistorySummary" }
+        },
+        "required": ["keyword_id", "keyword", "location", "location_code", "history", "summary"]
+      },
+      "PositionHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "desktop_position": { "type": "integer", "nullable": true },
+          "mobile_position": { "type": "integer", "nullable": true },
+          "ai_mode_position": { "type": "integer", "nullable": true },
+          "maps_position": { "type": "integer", "nullable": true },
+          "featured_snippet": { "type": "boolean" },
+          "local_pack_position": { "type": "integer", "nullable": true }
+        },
+        "required": ["date", "desktop_position", "mobile_position", "ai_mode_position", "maps_position", "featured_snippet", "local_pack_position"]
+      },
+      "KeywordHistorySummary": {
+        "type": "object",
+        "properties": {
+          "total_data_points": { "type": "integer" },
+          "date_range": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" }
+            },
+            "required": ["from", "to"]
+          },
+          "best_position": { "$ref": "#/components/schemas/DevicePositions" },
+          "worst_position": { "$ref": "#/components/schemas/DevicePositions" }
+        },
+        "required": ["total_data_points", "date_range", "best_position", "worst_position"]
+      },
+      "DevicePositions": {
+        "type": "object",
+        "properties": {
+          "desktop": { "type": "integer", "nullable": true },
+          "mobile": { "type": "integer", "nullable": true },
+          "ai_mode": { "type": "integer", "nullable": true },
+          "maps": { "type": "integer", "nullable": true }
+        },
+        "required": ["desktop", "mobile", "ai_mode", "maps"]
+      },
+      "Prompt": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "prompt": { "type": "string" },
+          "target_location": { "type": "string" },
+          "ai_models": { "type": "array", "items": { "type": "string" } },
+          "brand_name": { "type": "string", "nullable": true },
+          "visibility_percentage": { "type": "number" },
+          "average_position": { "type": "number" },
+          "best_model": { "type": "string", "nullable": true },
+          "ai_search_volume": { "type": "integer", "nullable": true },
+          "total_citations": { "type": "integer" },
+          "latest_responses": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/components/schemas/ModelResponse" }
+          },
+          "last_checked": { "type": "string", "format": "date-time", "nullable": true },
+          "last_analyzed": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "prompt", "target_location", "ai_models", "brand_name",
+          "visibility_percentage", "average_position", "best_model",
+          "ai_search_volume", "total_citations", "latest_responses",
+          "last_checked", "last_analyzed", "created_at"
+        ]
+      },
+      "PromptDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "prompt": { "type": "string" },
+          "target_location": { "type": "string" },
+          "ai_models": { "type": "array", "items": { "type": "string" } },
+          "brand_name": { "type": "string", "nullable": true },
+          "visibility_percentage": { "type": "number" },
+          "average_position": { "type": "number" },
+          "best_model": { "type": "string", "nullable": true },
+          "ai_search_volume": { "type": "integer", "nullable": true },
+          "total_citations": { "type": "integer" },
+          "latest_responses": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/components/schemas/ModelResponse" }
+          },
+          "last_checked": { "type": "string", "format": "date-time", "nullable": true },
+          "last_analyzed": { "type": "string", "format": "date-time", "nullable": true },
+          "last_volume_update": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "prompt", "target_location", "ai_models", "brand_name",
+          "visibility_percentage", "average_position", "best_model",
+          "ai_search_volume", "total_citations", "latest_responses",
+          "last_checked", "last_analyzed", "last_volume_update", "created_at"
+        ]
+      },
+      "ModelResponse": {
+        "type": "object",
+        "properties": {
+          "is_visible": { "type": "boolean" },
+          "position": { "type": "integer", "nullable": true },
+          "citations_count": { "type": "integer" },
+          "response_excerpt": { "type": "string", "nullable": true }
+        },
+        "required": ["is_visible", "position", "citations_count", "response_excerpt"]
+      },
+      "PromptHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "prompt_id": { "type": "string", "format": "uuid" },
+          "prompt": { "type": "string" },
+          "responses": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PromptHistoryEntry" }
+          }
+        },
+        "required": ["prompt_id", "prompt", "responses"]
+      },
+      "PromptHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "model": { "type": "string" },
+          "is_visible": { "type": "boolean" },
+          "position": { "type": "integer", "nullable": true },
+          "citations_count": { "type": "integer" },
+          "citations": { "type": "array", "items": {} },
+          "response_excerpt": { "type": "string", "nullable": true },
+          "checked_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["model", "is_visible", "position", "citations_count", "citations", "response_excerpt", "checked_at"]
+      },
+      "AuditSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "target_url": { "type": "string", "format": "uri" },
+          "status": { "type": "string", "enum": ["pending", "crawling", "processing", "completed", "failed"] },
+          "crawl_progress": { "type": "number" },
+          "pages_crawled": { "type": "integer" },
+          "total_issues": { "type": "integer" },
+          "critical_issues": { "type": "integer" },
+          "warning_issues": { "type": "integer" },
+          "notice_issues": { "type": "integer" },
+          "started_at": { "type": "string", "format": "date-time", "nullable": true },
+          "completed_at": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "target_url", "status", "crawl_progress", "pages_crawled",
+          "total_issues", "critical_issues", "warning_issues", "notice_issues",
+          "started_at", "completed_at", "created_at"
+        ]
+      },
+      "AuditDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "target_url": { "type": "string", "format": "uri" },
+          "status": { "type": "string" },
+          "crawl_progress": { "type": "number" },
+          "pages_crawled": { "type": "integer" },
+          "pages_in_queue": { "type": "integer" },
+          "total_issues": { "type": "integer", "description": "Active (non-dismissed) issue count." },
+          "critical_issues": { "type": "integer" },
+          "warning_issues": { "type": "integer" },
+          "notice_issues": { "type": "integer" },
+          "started_at": { "type": "string", "format": "date-time", "nullable": true },
+          "completed_at": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "issues_summary": {
+            "type": "object",
+            "properties": {
+              "passed": { "type": "integer", "description": "Number of dismissed issues." },
+              "failed": { "type": "integer", "description": "Number of active issues." },
+              "total": { "type": "integer", "description": "Total issues (passed + failed)." }
+            },
+            "required": ["passed", "failed", "total"]
+          }
+        },
+        "required": [
+          "id", "target_url", "status", "crawl_progress", "pages_crawled",
+          "pages_in_queue", "total_issues", "critical_issues", "warning_issues",
+          "notice_issues", "started_at", "completed_at", "created_at", "issues_summary"
+        ]
+      },
+      "AuditIssue": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "warning", "notice"] },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "affected_count": { "type": "integer" },
+          "status": { "type": "string", "enum": ["passed", "failed"], "description": "Dismissed issues have status `passed`." },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "type", "severity", "title", "description", "affected_count", "status", "created_at"]
+      },
+      "BacklinkOverview": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "target_domain": { "type": "string" },
+          "target_type": { "type": "string" },
+          "total_backlinks": { "type": "integer" },
+          "total_referring_domains": { "type": "integer" },
+          "domain_rank": { "type": "integer" },
+          "domain_trust": { "type": "number", "nullable": true },
+          "spam_score": { "type": "number", "nullable": true },
+          "dofollow_backlinks": { "type": "integer" },
+          "nofollow_backlinks": { "type": "integer" },
+          "broken_backlinks": { "type": "integer" },
+          "last_checked": { "type": "string", "format": "date-time", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "target_domain", "target_type", "total_backlinks",
+          "total_referring_domains", "domain_rank", "domain_trust", "spam_score",
+          "dofollow_backlinks", "nofollow_backlinks", "broken_backlinks",
+          "last_checked", "created_at"
+        ]
+      },
+      "BacklinksSummary": {
+        "type": "object",
+        "properties": {
+          "project_id": { "type": "string", "format": "uuid" },
+          "total_backlinks": { "type": "integer" },
+          "total_referring_domains": { "type": "integer" },
+          "average_domain_rank": { "type": "integer" },
+          "dofollow_backlinks": { "type": "integer" },
+          "nofollow_backlinks": { "type": "integer" },
+          "broken_backlinks": { "type": "integer" },
+          "tracked_domains_count": { "type": "integer" },
+          "last_updated": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "project_id", "total_backlinks", "total_referring_domains",
+          "average_domain_rank", "dofollow_backlinks", "nofollow_backlinks",
+          "broken_backlinks", "tracked_domains_count", "last_updated"
+        ]
+      },
+      "ReferringDomain": {
+        "type": "object",
+        "properties": {
+          "referring_domain": { "type": "string" },
+          "domain_rank": { "type": "integer" },
+          "backlinks_count": { "type": "integer" },
+          "status": { "type": "string" },
+          "first_seen": { "type": "string", "format": "date-time", "nullable": true },
+          "last_seen": { "type": "string", "format": "date-time", "nullable": true },
+          "lost_date": { "type": "string", "format": "date-time", "nullable": true },
+          "anchor_text": { "type": "string", "nullable": true },
+          "page_title": { "type": "string", "nullable": true },
+          "referring_page_url": { "type": "string", "format": "uri", "nullable": true },
+          "is_dofollow": { "type": "boolean" },
+          "is_redirect": { "type": "boolean", "nullable": true },
+          "platform_type": { "type": "string", "nullable": true },
+          "country_iso_code": { "type": "string", "nullable": true },
+          "target_domain": { "type": "string" }
+        },
+        "required": [
+          "referring_domain", "domain_rank", "backlinks_count", "status",
+          "first_seen", "last_seen", "lost_date", "anchor_text", "page_title",
+          "referring_page_url", "is_dofollow", "is_redirect", "platform_type",
+          "country_iso_code", "target_domain"
+        ]
+      },
+      "BacklinkHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "project_id": { "type": "string", "format": "uuid" },
+          "history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BacklinkHistoryEntry" }
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total_data_points": { "type": "integer" },
+              "date_range": {
+                "type": "object",
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" }
+                },
+                "required": ["from", "to"]
+              },
+              "net_backlinks_change": { "type": "integer" },
+              "net_domains_change": { "type": "integer" }
+            },
+            "required": ["total_data_points", "date_range", "net_backlinks_change", "net_domains_change"]
+          }
+        },
+        "required": ["project_id", "history", "summary"]
+      },
+      "BacklinkHistoryEntry": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "target_domain": { "type": "string" },
+          "new_backlinks": { "type": "integer" },
+          "lost_backlinks": { "type": "integer" },
+          "new_referring_domains": { "type": "integer" },
+          "lost_referring_domains": { "type": "integer" },
+          "net_backlinks_change": { "type": "integer" },
+          "net_domains_change": { "type": "integer" }
+        },
+        "required": [
+          "date", "target_domain", "new_backlinks", "lost_backlinks",
+          "new_referring_domains", "lost_referring_domains",
+          "net_backlinks_change", "net_domains_change"
+        ]
+      },
+      "AnchorsResponse": {
+        "type": "object",
+        "properties": {
+          "project_id": { "type": "string", "format": "uuid" },
+          "anchors": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnchorTextStats" }
+          },
+          "total_backlinks_analyzed": { "type": "integer" }
+        },
+        "required": ["project_id", "anchors", "total_backlinks_analyzed"]
+      },
+      "AnchorTextStats": {
+        "type": "object",
+        "properties": {
+          "anchor_text": { "type": "string" },
+          "count": { "type": "integer" },
+          "percentage": { "type": "number" },
+          "dofollow_count": { "type": "integer" },
+          "nofollow_count": { "type": "integer" },
+          "average_domain_rank": { "type": "integer" }
+        },
+        "required": ["anchor_text", "count", "percentage", "dofollow_count", "nofollow_count", "average_domain_rank"]
+      },
+      "ContentItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "scheduled_date": { "type": "string", "format": "date", "nullable": true },
+          "due_date": { "type": "string", "format": "date", "nullable": true },
+          "status": { "type": "string", "nullable": true },
+          "status_color": { "type": "string", "nullable": true },
+          "content_type": { "type": "string", "nullable": true },
+          "content_type_color": { "type": "string", "nullable": true },
+          "priority": { "type": "integer" },
+          "document_url": { "type": "string", "format": "uri", "nullable": true },
+          "source_url": { "type": "string", "format": "uri", "nullable": true },
+          "featured_image_url": { "type": "string", "format": "uri", "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "id", "title", "description", "scheduled_date", "due_date", "status",
+          "status_color", "content_type", "content_type_color", "priority",
+          "document_url", "source_url", "featured_image_url", "created_at", "updated_at"
+        ]
+      },
+      "ContentDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "scheduled_date": { "type": "string", "format": "date", "nullable": true },
+          "due_date": { "type": "string", "format": "date", "nullable": true },
+          "status": { "type": "string", "nullable": true },
+          "status_color": { "type": "string", "nullable": true },
+          "content_type": { "type": "string", "nullable": true },
+          "content_type_color": { "type": "string", "nullable": true },
+          "priority": { "type": "integer" },
+          "document_url": { "type": "string", "format": "uri", "nullable": true },
+          "source_url": { "type": "string", "format": "uri", "nullable": true },
+          "featured_image_url": { "type": "string", "format": "uri", "nullable": true },
+          "content_body": { "type": "string", "nullable": true },
+          "meta_data": { "type": "object", "additionalProperties": true, "nullable": true },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "id", "title", "description", "scheduled_date", "due_date", "status",
+          "status_color", "content_type", "content_type_color", "priority",
+          "document_url", "source_url", "featured_image_url", "content_body",
+          "meta_data", "created_at", "updated_at"
+        ]
+      },
+      "ContentPreferences": {
+        "type": "object",
+        "properties": {
+          "preferences": { "type": "string", "nullable": true },
+          "publishing_preferences": { "type": "string", "nullable": true },
+          "auto_publish": { "type": "boolean" },
+          "gbp_posting": { "type": "boolean" }
+        },
+        "required": ["preferences", "publishing_preferences", "auto_publish", "gbp_posting"]
+      },
+      "UpdateContentPreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "preferences": { "type": "string", "maxLength": 10000, "description": "Content style and tone preferences." },
+          "publishing_preferences": { "type": "string", "maxLength": 10000, "description": "Publishing workflow preferences." }
+        },
+        "description": "At least one of `preferences` or `publishing_preferences` must be provided."
+      },
+      "ReportLink": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "report_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "date_range": { "type": "string" },
+          "start_date": { "type": "string", "format": "date", "nullable": true },
+          "end_date": { "type": "string", "format": "date", "nullable": true },
+          "share_url": { "type": "string", "format": "uri" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "id", "report_id", "title", "description", "date_range",
+          "start_date", "end_date", "share_url", "created_at", "updated_at"
+        ]
+      },
+      "ReportDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "report_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "date_range": { "type": "string" },
+          "start_date": { "type": "string", "format": "date", "nullable": true },
+          "end_date": { "type": "string", "format": "date", "nullable": true },
+          "share_url": { "type": "string", "format": "uri" },
+          "config": { "$ref": "#/components/schemas/ReportConfig" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "id", "report_id", "title", "description", "date_range",
+          "start_date", "end_date", "share_url", "config", "created_at", "updated_at"
+        ]
+      },
+      "ReportConfig": {
+        "type": "object",
+        "properties": {
+          "include_rankings": { "type": "boolean" },
+          "include_audits": { "type": "boolean" },
+          "include_prompts": { "type": "boolean" },
+          "include_backlinks": { "type": "boolean" },
+          "include_content": { "type": "boolean" }
+        }
+      },
+      "CreateReportRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "date_range": {
+            "type": "string",
+            "enum": ["7days", "30days", "90days", "custom"]
+          },
+          "custom_start_date": { "type": "string", "format": "date", "description": "Required when date_range is `custom`." },
+          "custom_end_date": { "type": "string", "format": "date", "description": "Required when date_range is `custom`." },
+          "config": { "$ref": "#/components/schemas/ReportConfig" }
+        },
+        "required": ["title", "date_range"]
+      },
+      "CreateReportResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "report_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "share_url": { "type": "string", "format": "uri" },
+          "date_range": { "type": "string" },
+          "start_date": { "type": "string", "format": "date" },
+          "end_date": { "type": "string", "format": "date" },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "report_id", "title", "description", "share_url", "date_range", "start_date", "end_date", "created_at"]
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "nullable": true },
+          "url": { "type": "string", "format": "uri" },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebhookEvent" }
+          },
+          "is_active": { "type": "boolean" },
+          "last_triggered_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_success_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_failure_at": { "type": "string", "format": "date-time", "nullable": true },
+          "failure_count": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "id", "project_id", "name", "url", "events", "is_active",
+          "last_triggered_at", "last_success_at", "last_failure_at",
+          "failure_count", "created_at"
+        ]
+      },
+      "WebhookDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "nullable": true },
+          "url": { "type": "string", "format": "uri" },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebhookEvent" }
+          },
+          "is_active": { "type": "boolean" },
+          "last_triggered_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_success_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_failure_at": { "type": "string", "format": "date-time", "nullable": true },
+          "failure_count": { "type": "integer" },
+          "consecutive_failures": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time", "nullable": true }
+        },
+        "required": [
+          "id", "project_id", "name", "url", "events", "is_active",
+          "last_triggered_at", "last_success_at", "last_failure_at",
+          "failure_count", "consecutive_failures", "created_at", "updated_at"
+        ]
+      },
+      "WebhookWithSecret": {
+        "type": "object",
+        "description": "Webhook response returned only on creation, includes the signing secret.",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "nullable": true },
+          "url": { "type": "string", "format": "uri" },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebhookEvent" }
+          },
+          "is_active": { "type": "boolean" },
+          "last_triggered_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_success_at": { "type": "string", "format": "date-time", "nullable": true },
+          "last_failure_at": { "type": "string", "format": "date-time", "nullable": true },
+          "failure_count": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "secret": { "type": "string", "description": "HMAC signing secret. Only returned on creation — store it securely." }
+        },
+        "required": [
+          "id", "project_id", "name", "url", "events", "is_active",
+          "last_triggered_at", "last_success_at", "last_failure_at",
+          "failure_count", "created_at", "secret"
+        ]
+      },
+      "WebhookEvent": {
+        "type": "string",
+        "enum": [
+          "content.created",
+          "content.updated",
+          "content.scheduled",
+          "content.status_changed",
+          "audit.completed",
+          "audit.started",
+          "keywords.updated",
+          "prompts.updated"
+        ]
+      },
+      "CreateWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri", "description": "Must use HTTPS. Cannot point to private or internal addresses." },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebhookEvent" },
+            "minItems": 1
+          }
+        },
+        "required": ["project_id", "url", "events"]
+      },
+      "UpdateWebhookRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri", "description": "Must use HTTPS." },
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WebhookEvent" },
+            "minItems": 1
+          },
+          "is_active": { "type": "boolean" }
+        }
+      },
+      "TestWebhookResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "status_code": { "type": "integer", "description": "HTTP status code returned by the webhook endpoint." }
+        },
+        "required": ["success", "message"]
+      }
+    }
+  }
+}
