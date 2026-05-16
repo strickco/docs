@@ -1,16 +1,73 @@
 ---
 title: "Anchor Text"
 api: "GET /projects/{projectId}/backlinks/anchors"
-description: "Get anchor text analysis for backlinks"
+description: "Get anchor text analysis showing the most common anchor texts in your backlink profile"
 ---
 
+Returns aggregated anchor text data with counts and percentages.
+
 <ParamField path="projectId" type="string" required>Project UUID</ParamField>
-<ParamField query="limit" type="number" default="50">Max anchor texts to return</ParamField>
-<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+
+<ParamField query="limit" type="number" default="50">
+  Maximum anchor texts to return (max: 1000)
+</ParamField>
+
+<ParamField query="offset" type="number" default="0">
+  Number to skip for pagination
+</ParamField>
 
 <RequestExample>
 ```bash cURL
 curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks/anchors?limit=10" \
   -H "Authorization: Bearer rk_live_your_api_key"
 ```
+
+```javascript JavaScript
+const response = await fetch(
+  `https://app.ranked.ai/api/v1/projects/${projectId}/backlinks/anchors?limit=10`,
+  { headers: { 'Authorization': `Bearer ${apiKey}` } }
+);
+const { data, meta } = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    f'https://app.ranked.ai/api/v1/projects/{project_id}/backlinks/anchors',
+    headers={'Authorization': f'Bearer {api_key}'},
+    params={'limit': 10}
+)
+anchors = response.json()['data']
+```
 </RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": [
+    {
+      "anchor_text": "tree service sioux city",
+      "count": 8,
+      "percentage": 13.8,
+      "is_dofollow": true
+    },
+    {
+      "anchor_text": "siouxcitytreeco.com",
+      "count": 5,
+      "percentage": 8.6,
+      "is_dofollow": true
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "total": 9,
+      "limit": 10,
+      "offset": 0,
+      "has_more": false
+    }
+  }
+}
+```
+</ResponseExample>

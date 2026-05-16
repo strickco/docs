@@ -1,8 +1,10 @@
 ---
 title: "Content Detail"
 api: "GET /projects/{projectId}/content/{contentId}"
-description: "Get full details for a content item including body"
+description: "Get full details for a content item including the article body"
 ---
+
+Returns complete content item data including the full content body, metadata, and scheduling information.
 
 <ParamField path="projectId" type="string" required>Project UUID</ParamField>
 <ParamField path="contentId" type="string" required>Content item UUID</ParamField>
@@ -12,4 +14,62 @@ description: "Get full details for a content item including body"
 curl "https://app.ranked.ai/api/v1/projects/{projectId}/content/{contentId}" \
   -H "Authorization: Bearer rk_live_your_api_key"
 ```
+
+```javascript JavaScript
+const response = await fetch(
+  `https://app.ranked.ai/api/v1/projects/${projectId}/content/${contentId}`,
+  { headers: { 'Authorization': `Bearer ${apiKey}` } }
+);
+const { data } = await response.json();
+console.log(data.title, data.status);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    f'https://app.ranked.ai/api/v1/projects/{project_id}/content/{content_id}',
+    headers={'Authorization': f'Bearer {api_key}'}
+)
+content = response.json()['data']
+```
 </RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "id": "acc6b6c5-3573-488e-b1c2-4994350c4a18",
+    "title": "Best Tree Care Tips for Spring",
+    "description": null,
+    "scheduled_date": "2026-05-20T00:00:00+00:00",
+    "due_date": null,
+    "status": "Published",
+    "status_color": "green",
+    "content_type": "Blog Post",
+    "content_type_color": "green",
+    "priority": 3,
+    "document_url": "https://docs.google.com/document/d/...",
+    "source_url": "https://docs.google.com/document/d/...",
+    "featured_image_url": null,
+    "content_body": "<h1>Best Tree Care Tips for Spring</h1><p>Spring is the perfect time to...</p>",
+    "meta_data": {
+      "word_count": 1250,
+      "reading_time": "5 min"
+    },
+    "created_at": "2026-04-15T10:00:00.000Z",
+    "updated_at": "2026-05-18T14:30:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `content_body` | string or null | Full HTML content of the article |
+| `meta_data` | object or null | Additional metadata (word count, reading time, revision notes) |
+| `document_url` | string or null | Link to the content document |
+| `featured_image_url` | string or null | Featured image URL if set |
