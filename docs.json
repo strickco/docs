@@ -51,6 +51,12 @@
               "recipes/google-sheets",
               "recipes/ranking-monitor"
             ]
+          },
+          {
+            "group": "SDK",
+            "pages": [
+              "sdk"
+            ]
           }
         ]
       },
