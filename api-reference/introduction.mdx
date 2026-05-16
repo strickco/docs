@@ -11,7 +11,7 @@ https://app.ranked.ai/api/v1
 
 ## Authentication
 
-All requests require a Bearer token:
+All requests require a Bearer token in the `Authorization` header:
 
 ```bash
 curl https://app.ranked.ai/api/v1/projects \
@@ -20,27 +20,75 @@ curl https://app.ranked.ai/api/v1/projects \
 
 Create API keys from **Settings > API** in your [dashboard](https://app.ranked.ai/dashboard/settings?tab=api-keys).
 
+### Permissions
+
+| Key Type | Can do |
+|----------|--------|
+| **Read Only** (default) | Fetch all data: keywords, audits, backlinks, AI visibility, content, reports |
+| **Read + Write** | Everything above, plus: create reports, manage webhooks, update content preferences |
+
+All `GET` endpoints work with read-only keys. `POST`, `PATCH`, and `DELETE` require read+write.
+
 ## How it works
 
-All data in the API is organized by **project**. A project represents one website you're tracking.
+All data is organized by **project**. A project represents one website you're tracking in Ranked AI.
 
-```
-GET /projects                              → list your projects (get project IDs)
-GET /projects/{projectId}/rankings/keywords → keyword data for that project
-GET /projects/{projectId}/audits/latest     → audit data for that project
-GET /projects/{projectId}/prompts           → AI visibility for that project
-...
+**Step 1** -- Get your project IDs:
+```bash
+curl https://app.ranked.ai/api/v1/projects \
+  -H "Authorization: Bearer rk_live_your_api_key"
 ```
 
-**Step 1:** Call `GET /projects` to get your project IDs.
+```json
+{
+  "data": [
+    { "id": "40596405-c27c-...", "name": "My Website", "status": "active", "websiteUrl": "https://example.com" }
+  ]
+}
+```
 
-**Step 2:** Use a project ID in all other endpoints to fetch keywords, audits, backlinks, content, prompts, and reports for that specific project.
+**Step 2** -- Use the project ID to fetch any data:
+```bash
+curl "https://app.ranked.ai/api/v1/projects/40596405-c27c-.../rankings/keywords?limit=5" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
 
-**Step 3 (optional):** Set up webhooks with a project ID to receive notifications when data changes for that project.
+```json
+{
+  "data": [
+    {
+      "keyword": "tree care services",
+      "desktop_position": 5,
+      "mobile_position": 3,
+      "ai_mode_position": 3,
+      "maps_position": 3,
+      "net_change": 93,
+      "location": "Sioux City, Iowa, United States"
+    }
+  ]
+}
+```
+
+**Step 3** (optional) -- Set up webhooks to get notified when data changes:
+```bash
+curl -X POST https://app.ranked.ai/api/v1/webhooks \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://your-app.com/webhook","project_id":"40596405-c27c-...","events":["keywords.updated"]}'
+```
 
 <Info>
   Each API key can access all projects owned by the account that created it. If you manage multiple client websites, they'll all appear in the projects list.
 </Info>
+
+## Key concepts
+
+| Term | What it means |
+|------|--------------|
+| **Keywords** | Search terms you're tracking in Google. Positions tracked across Desktop, Mobile, AI Mode (Google's AI search), and Google Maps. |
+| **AI Visibility** | How often your brand appears when people ask AI tools (ChatGPT, Claude, Gemini, Perplexity, Grok, Meta) questions related to your business. Each tracked question is called a "prompt". |
+| **Net Change** | The total position improvement across all four search channels (Desktop + Mobile + AI Mode + Maps). Positive = you moved up. |
+| **Audits** | Automated site crawls that find SEO issues like missing tags, broken pages, and performance problems. |
 
 ## Endpoints
 
@@ -48,64 +96,60 @@ GET /projects/{projectId}/prompts           → AI visibility for that project
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects` | List your SEO projects |
+| `GET` | `/projects` | List your SEO projects |
 
 ### Keywords
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects/{id}/rankings/keywords` | List keyword positions |
-| GET | `/projects/{id}/rankings/keywords/{keywordId}/history` | Position history for a keyword |
+| `GET` | `/projects/{id}/rankings/keywords` | Keyword positions across all channels |
+| `GET` | `/projects/{id}/rankings/keywords/{keywordId}/history` | Daily position history for a keyword |
 
 ### AI Visibility
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects/{id}/prompts` | List AI visibility prompts |
-| GET | `/projects/{id}/prompts/{promptId}` | Prompt detail with per-model data |
-| GET | `/projects/{id}/prompts/{promptId}/history` | Response history with citations |
+| `GET` | `/projects/{id}/prompts` | AI visibility prompts with per-model data |
+| `GET` | `/projects/{id}/prompts/{promptId}` | Single prompt detail |
+| `GET` | `/projects/{id}/prompts/{promptId}/history` | Model response history with citations |
 
 ### Audits
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects/{id}/audits` | List audit tasks |
-| GET | `/projects/{id}/audits/latest` | Most recent completed audit |
-| GET | `/projects/{id}/audits/{auditId}/issues` | Issues for a specific audit |
+| `GET` | `/projects/{id}/audits` | List audit tasks |
+| `GET` | `/projects/{id}/audits/latest` | Most recent completed audit |
+| `GET` | `/projects/{id}/audits/{auditId}/issues` | Issues for a specific audit |
 
 ### Backlinks
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects/{id}/backlinks` | Tracked backlink targets |
-| GET | `/projects/{id}/backlinks/summary` | Aggregated backlink metrics |
-| GET | `/projects/{id}/backlinks/domains` | Referring domains |
-| GET | `/projects/{id}/backlinks/history` | Daily new/lost history |
-| GET | `/projects/{id}/backlinks/anchors` | Anchor text analysis |
+| `GET` | `/projects/{id}/backlinks` | Tracked backlink targets |
+| `GET` | `/projects/{id}/backlinks/summary` | Total backlinks and referring domains |
+| `GET` | `/projects/{id}/backlinks/domains` | Referring domains with domain rank |
+| `GET` | `/projects/{id}/backlinks/history` | Daily new/lost backlink counts |
+| `GET` | `/projects/{id}/backlinks/anchors` | Anchor text analysis |
 
 ### Content
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/projects/{id}/content` | Content calendar items |
-| GET | `/projects/{id}/content/{contentId}` | Content detail with body |
-| GET, PATCH | `/projects/{id}/content/preferences` | Content preferences |
+| `GET` | `/projects/{id}/content` | Content calendar items |
+| `GET` | `/projects/{id}/content/{contentId}` | Full content with article body |
+| `GET` `PATCH` | `/projects/{id}/content/preferences` | Content preferences |
 
 ### Reports
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET, POST | `/projects/{id}/reports` | List or create report links |
-| GET, DELETE | `/projects/{id}/reports/{reportId}` | Get or delete a report |
+| `GET` `POST` | `/projects/{id}/reports` | List or create report links |
+| `GET` `DELETE` | `/projects/{id}/reports/{reportId}` | Get or delete a report |
 
 ### Webhooks
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET, POST | `/webhooks` | List or create webhook subscriptions |
-| GET, PATCH, DELETE | `/webhooks/{webhookId}` | Manage a webhook |
-| POST | `/webhooks/{webhookId}/test` | Send a test delivery |
-
-<Note>
-  POST, PATCH, and DELETE endpoints require an API key with **Read + Write** permissions.
-</Note>
+| `GET` `POST` | `/webhooks` | List or create webhook subscriptions |
+| `GET` `PATCH` `DELETE` | `/webhooks/{webhookId}` | Manage a webhook |
+| `POST` | `/webhooks/{webhookId}/test` | Send a test delivery |
