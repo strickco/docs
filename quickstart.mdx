@@ -129,6 +129,46 @@ Each keyword includes positions across four channels:
 
 See the [full API reference](/api-reference/introduction) for all endpoints and parameters.
 
+## Build with AI
+
+Copy this prompt into Cursor, Claude, or ChatGPT to build an integration:
+
+<Prompt description="Give this to your AI coding tool to build a Ranked AI integration." actions={["copy", "cursor"]}>
+I need to integrate with the Ranked AI REST API. Here's everything you need:
+
+Base URL: https://app.ranked.ai/api/v1
+Auth: Bearer token in Authorization header (format: rk_live_...)
+Docs: https://dev.ranked.ai
+
+How it works:
+1. GET /projects → returns array of projects with id, name, websiteUrl, status
+2. Use project ID in all other endpoints: /projects/{projectId}/...
+
+Available endpoints:
+- GET /projects → list SEO projects
+- GET /projects/{id}/rankings/keywords?limit=1000 → keyword positions (desktop_position, mobile_position, ai_mode_position, maps_position, net_change, location, last_checked)
+- GET /projects/{id}/rankings/keywords/{keywordId}/history → daily position history
+- GET /projects/{id}/prompts?limit=200 → AI visibility across ChatGPT, Claude, Gemini, Perplexity, Grok, Meta (visibility_percentage, average_position, latest_responses per model)
+- GET /projects/{id}/prompts/{promptId}/history → full AI model responses with citations
+- GET /projects/{id}/audits/latest → latest site audit (total_issues, critical_issues, warning_issues, notice_issues)
+- GET /projects/{id}/audits/{auditId}/issues → individual audit issues with severity and affected_count
+- GET /projects/{id}/backlinks/summary → total backlinks, referring domains
+- GET /projects/{id}/backlinks/domains?limit=100 → referring domains with domain_rank
+- GET /projects/{id}/content?limit=100 → content calendar (title, status, scheduled_date)
+- GET /projects/{id}/reports → shareable report links
+- POST /projects/{id}/reports → create report (needs write key)
+
+All responses: { success: true, data: [...], meta: { pagination: { total, limit, offset, has_more } } }
+
+Webhooks (needs write key):
+- POST /webhooks → create subscription with url, project_id, events array
+- Events: keywords.updated, content.status_changed, content.created, audit.started, audit.completed, prompts.updated
+- Payloads include X-Webhook-Signature header (HMAC-SHA256) for verification
+
+Rate limits: 100/min, 2000/hr, 20000/day per key
+Max limits: 1000 keywords, 200 prompts, 500 projects per request
+</Prompt>
+
 ## Next steps
 
 <Columns cols={2}>
