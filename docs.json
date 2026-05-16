@@ -129,11 +129,21 @@
       },
       {
         "tab": "Changelog",
-        "href": "https://dev.ranked.ai/changelog"
+        "groups": [
+          {
+            "group": "Changelog",
+            "pages": ["changelog"]
+          }
+        ]
       },
       {
         "tab": "Support",
-        "href": "https://dev.ranked.ai/support"
+        "groups": [
+          {
+            "group": "Support",
+            "pages": ["support"]
+          }
+        ]
       }
     ]
   },
