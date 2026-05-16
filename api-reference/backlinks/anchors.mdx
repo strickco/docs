@@ -1,0 +1,16 @@
+---
+title: "Anchor Text"
+api: "GET /projects/{projectId}/backlinks/anchors"
+description: "Get anchor text analysis for backlinks"
+---
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField query="limit" type="number" default="50">Max anchor texts to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks/anchors?limit=10" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>

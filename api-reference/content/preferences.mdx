@@ -1,0 +1,29 @@
+---
+title: "Content Preferences"
+api: "GET /projects/{projectId}/content/preferences"
+description: "Get or update content preferences for a project"
+---
+
+### GET - Retrieve preferences
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/content/preferences" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+### PATCH - Update preferences
+
+Requires a **Read + Write** API key.
+
+<RequestExample>
+```bash cURL
+curl -X PATCH "https://app.ranked.ai/api/v1/projects/{projectId}/content/preferences" \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "preferences": "Write in a professional but friendly tone. Focus on local tree care topics." }'
+```
+</RequestExample>

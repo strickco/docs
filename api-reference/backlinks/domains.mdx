@@ -1,0 +1,18 @@
+---
+title: "Referring Domains"
+api: "GET /projects/{projectId}/backlinks/domains"
+description: "Get referring domains with domain rank and follow status"
+---
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField query="limit" type="number" default="50">Max domains to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+<ParamField query="sort_by" type="string">Sort by: `domain_rank`, `backlinks_count`, `first_seen`</ParamField>
+<ParamField query="sort_order" type="string" default="desc">`asc` or `desc`</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks/domains?limit=10&sort_by=domain_rank" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>

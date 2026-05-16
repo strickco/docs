@@ -1,0 +1,67 @@
+---
+title: "List Webhooks"
+api: "GET /webhooks"
+description: "List webhook subscriptions or create a new one"
+---
+
+### GET - List subscriptions
+
+Returns all webhook subscriptions for the authenticated user.
+
+<ParamField query="project_id" type="string">Filter by project UUID</ParamField>
+<ParamField query="limit" type="number" default="50">Max subscriptions to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/webhooks" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+### POST - Create subscription
+
+Requires a **Read + Write** API key.
+
+<ParamField body="name" type="string">Display name for this subscription</ParamField>
+<ParamField body="url" type="string" required>Webhook destination URL (must be HTTPS)</ParamField>
+<ParamField body="project_id" type="string" required>Project UUID to monitor</ParamField>
+<ParamField body="events" type="string[]" required>
+  Events to subscribe to. Options: `content.created`, `content.status_changed`, `audit.started`, `audit.completed`, `keywords.updated`, `prompts.updated`
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://app.ranked.ai/api/v1/webhooks" \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Dashboard",
+    "url": "https://your-app.com/webhooks/ranked",
+    "project_id": "your-project-uuid",
+    "events": ["keywords.updated", "content.status_changed", "audit.completed"]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "id": "3a2e02d7-106f-4425-9518-9597dbf5a23a",
+    "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+    "name": "My Dashboard",
+    "url": "https://your-app.com/webhooks/ranked",
+    "events": ["keywords.updated", "content.status_changed", "audit.completed"],
+    "is_active": true,
+    "secret": "whsec_daca66d72437cbe7767ec3c3bea5fe359637832f...",
+    "created_at": "2026-05-16T01:06:02.042Z"
+  }
+}
+```
+</ResponseExample>
+
+<Warning>
+  The `secret` is only returned when the subscription is created. Store it securely for signature verification.
+</Warning>

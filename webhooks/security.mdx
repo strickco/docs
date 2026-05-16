@@ -1,0 +1,124 @@
+---
+title: "Webhook Security"
+description: "Verify webhook signatures to ensure payloads are authentic"
+---
+
+## Getting your webhook secret
+
+When you create a webhook subscription, the API response includes a `secret` field. This is the only time the secret is shown -- store it immediately in your environment variables or secrets manager.
+
+```bash
+# Create a webhook subscription
+curl -X POST https://app.ranked.ai/api/v1/webhooks \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Dashboard",
+    "url": "https://your-app.com/webhooks/ranked",
+    "project_id": "your-project-uuid",
+    "events": ["keywords.updated", "audit.completed"]
+  }'
+```
+
+The response contains the secret:
+
+```json
+{
+  "data": {
+    "id": "3a2e02d7-106f-4425-9518-9597dbf5a23a",
+    "url": "https://your-app.com/webhooks/ranked",
+    "secret": "whsec_daca66d72437cbe7767ec3c3bea5fe359637832f800ca4d284ed39ffc624a611",
+    ...
+  }
+}
+```
+
+Save `whsec_daca66d...` as an environment variable (e.g., `RANKED_WEBHOOK_SECRET`). You'll use it to verify every incoming delivery.
+
+<Warning>
+  The secret is only shown once when the subscription is created. If you lose it, delete the webhook and create a new one.
+</Warning>
+
+## Verifying signatures
+
+Every webhook delivery includes an HMAC-SHA256 signature in the `X-Webhook-Signature` header. Use your stored secret to verify the payload hasn't been tampered with.
+
+### Headers sent with each delivery
+
+| Header | Description |
+|--------|-------------|
+| `X-Webhook-Signature` | `sha256=` followed by the HMAC-SHA256 hex digest |
+| `X-Webhook-Timestamp` | Unix timestamp when the webhook was sent |
+| `X-Webhook-Event` | Event type (e.g., `keywords.updated`) |
+| `X-Webhook-Delivery-Attempt` | Attempt number (1, 2, or 3) |
+| `User-Agent` | `RankedAI-Webhooks/1.0` |
+
+### Verifying in Node.js
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const expectedSignature = 'sha256=' + crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+// Express middleware
+app.post('/webhooks/ranked', express.raw({ type: 'application/json' }), (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const payload = req.body.toString();
+
+  if (!verifyWebhook(payload, signature, process.env.RANKED_WEBHOOK_SECRET)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  const event = JSON.parse(payload);
+  // Process event...
+
+  res.status(200).send('OK');
+});
+```
+
+### Verifying in Python
+
+```python
+import hmac
+import hashlib
+
+def verify_webhook(payload: bytes, signature: str, secret: str) -> bool:
+    expected = 'sha256=' + hmac.new(
+        secret.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+
+# Flask example
+@app.route('/webhooks/ranked', methods=['POST'])
+def handle_webhook():
+    signature = request.headers.get('X-Webhook-Signature')
+    payload = request.get_data()
+
+    if not verify_webhook(payload, signature, WEBHOOK_SECRET):
+        return 'Invalid signature', 401
+
+    event = request.get_json()
+    # Process event...
+
+    return 'OK', 200
+```
+
+## Best practices
+
+- Always verify signatures before processing webhooks
+- Use `crypto.timingSafeEqual` (Node.js) or `hmac.compare_digest` (Python) to prevent timing attacks
+- Return a `200` response quickly, then process the event asynchronously
+- Implement idempotency -- the same event may be delivered more than once during retries
+- Check the `X-Webhook-Timestamp` to reject old payloads (e.g., older than 5 minutes)

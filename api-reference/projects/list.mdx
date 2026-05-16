@@ -1,0 +1,50 @@
+---
+title: "List Projects"
+api: "GET /projects"
+description: "List all SEO projects for the authenticated user"
+---
+
+Returns active SEO projects owned by the API key holder. Only projects with `trial`, `active`, or `past_due` status are included.
+
+### Query parameters
+
+<ParamField query="limit" type="number" default="50">
+  Maximum number of projects to return (max: 500)
+</ParamField>
+
+<ParamField query="offset" type="number" default="0">
+  Number of projects to skip for pagination
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://app.ranked.ai/api/v1/projects \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": [
+    {
+      "id": "40596405-c27c-4dfc-89e4-142c87846d66",
+      "name": "Sioux City Tree Co",
+      "status": "active",
+      "serviceType": "seo",
+      "websiteUrl": "https://siouxcitytreeco.com",
+      "createdAt": "2025-08-28T08:47:05.816Z"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "total": 2,
+      "limit": 50,
+      "offset": 0,
+      "has_more": false
+    }
+  }
+}
+```
+</ResponseExample>

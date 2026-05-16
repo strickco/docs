@@ -1,0 +1,44 @@
+---
+title: "Prompt Detail"
+api: "GET /projects/{projectId}/prompts/{promptId}"
+description: "Get detailed AI visibility data for a specific prompt"
+---
+
+Returns full details for a single AI visibility prompt including per-model responses.
+
+### Path parameters
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField path="promptId" type="string" required>Prompt UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/prompts/{promptId}" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "id": "bd17920c-61ff-4298-9116-f0a8035aabf3",
+    "prompt": "Who provides tree services for HOA properties in Sioux City, Iowa?",
+    "target_location": "Sioux City, Iowa, United States",
+    "ai_models": ["openai/gpt-5.4-nano", "anthropic/claude-3-haiku", "google/gemini-2.5-flash-lite", "perplexity/sonar", "xai/grok-4.1-fast-non-reasoning", "meta/llama-4-scout"],
+    "brand_name": "Sioux City Tree Co",
+    "visibility_percentage": 50,
+    "average_position": 5,
+    "best_model": "openai/gpt-5.4-nano",
+    "ai_search_volume": 60,
+    "total_citations": 46,
+    "latest_responses": { ... },
+    "last_checked": "2026-05-10T00:30:51.79+00:00",
+    "last_analyzed": "2026-05-10T00:30:51.728+00:00",
+    "last_volume_update": "2026-04-15T12:00:00.000Z",
+    "created_at": "2026-03-12T21:57:35.036Z"
+  }
+}
+```
+</ResponseExample>

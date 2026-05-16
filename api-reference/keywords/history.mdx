@@ -1,0 +1,62 @@
+---
+title: "Keyword History"
+api: "GET /projects/{projectId}/rankings/keywords/{keywordId}/history"
+description: "Get daily position history for a specific keyword"
+---
+
+Returns daily position data across all search channels for a tracked keyword.
+
+### Path parameters
+
+<ParamField path="projectId" type="string" required>
+  Project UUID
+</ParamField>
+
+<ParamField path="keywordId" type="string" required>
+  Keyword UUID (from the keywords list endpoint)
+</ParamField>
+
+### Query parameters
+
+<ParamField query="date_from" type="string">
+  Start date (ISO 8601). Defaults to 90 days ago.
+</ParamField>
+
+<ParamField query="date_to" type="string">
+  End date (ISO 8601). Defaults to today.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/rankings/keywords/{keywordId}/history" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "keyword_id": "abc-123",
+    "keyword": "tree care services sioux city",
+    "history": [
+      {
+        "check_date": "2026-05-14",
+        "desktop_position": 5,
+        "mobile_position": 3,
+        "ai_mode_position": 3,
+        "maps_position": 3,
+        "featured_snippet": false,
+        "local_pack_position": null
+      }
+    ],
+    "summary": {
+      "best_position": 1,
+      "worst_position": 12,
+      "data_points": 30
+    }
+  }
+}
+```
+</ResponseExample>

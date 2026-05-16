@@ -1,0 +1,121 @@
+---
+title: "Authentication"
+description: "Authenticate API requests with Bearer tokens"
+---
+
+## API Keys
+
+All API requests require a Bearer token in the `Authorization` header. Create API keys from **Settings > API** in your dashboard.
+
+```bash
+curl https://app.ranked.ai/api/v1/projects \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+
+### Key types
+
+| Scope | Permissions |
+|-------|------------|
+| **Read Only** (default) | Fetch all data: keywords, audits, backlinks, prompts, content, reports |
+| **Read + Write** | Everything above, plus: create reports, manage webhooks, update content preferences |
+
+### Key format
+
+API keys follow the format `rk_live_` followed by a random string. Example:
+
+```
+rk_live_PJcyKvCPW1lSdCtC0-Gh0MrwCv3poWF5
+```
+
+<Warning>
+  Keys are shown only once when created. Store them securely -- you cannot retrieve a key after closing the creation dialog.
+</Warning>
+
+## Response format
+
+All responses follow a consistent envelope:
+
+### Success
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "request_id": "req_abc123",
+    "rate_limit": {
+      "limit": 100,
+      "remaining": 99,
+      "reset": 1778891947
+    },
+    "pagination": {
+      "total": 20,
+      "limit": 50,
+      "offset": 0,
+      "has_more": false
+    }
+  }
+}
+```
+
+### Error
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid API key"
+  },
+  "meta": {
+    "request_id": "req_abc123"
+  }
+}
+```
+
+### Error codes
+
+| Code | HTTP Status | Description |
+|------|------------|-------------|
+| `UNAUTHORIZED` | 401 | Missing or invalid API key |
+| `FORBIDDEN` | 403 | Valid key but insufficient permissions (e.g., read-only key attempting a write) |
+| `NOT_FOUND` | 404 | Resource not found |
+| `VALIDATION_ERROR` | 400 | Invalid request parameters |
+| `RATE_LIMITED` | 429 | Too many requests |
+| `INTERNAL_ERROR` | 500 | Server error |
+
+## Pagination
+
+List endpoints support `limit` and `offset` query parameters:
+
+```bash
+# Get 20 keywords starting from the 40th
+curl "https://app.ranked.ai/api/v1/projects/{id}/rankings/keywords?limit=20&offset=40" \
+  -H "Authorization: Bearer rk_live_..."
+```
+
+- **Default limit**: 50
+- **Maximum limit**: 1000 (keywords), 200 (prompts), 500 (projects)
+- **Offset**: 0-based
+
+The `meta.pagination` object indicates `total` count and `has_more` flag.
+
+## Rate limits
+
+| Window | Limit |
+|--------|-------|
+| Per minute | 100 requests |
+| Per hour | 2,000 requests |
+| Per day | 20,000 requests |
+
+Rate limit headers are included in every response via `meta.rate_limit`:
+
+```json
+{
+  "limit": 100,
+  "remaining": 97,
+  "reset": 1778891947
+}
+```
+
+When rate limited, you'll receive a `429` response. Wait until `reset` (Unix timestamp) before retrying.

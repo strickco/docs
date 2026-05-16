@@ -1,0 +1,104 @@
+---
+title: "Rate Limits"
+description: "API rate limits and best practices for staying within them"
+---
+
+## Limits
+
+| Window | Limit |
+|--------|-------|
+| Per minute | 100 requests |
+| Per hour | 2,000 requests |
+| Per day | 20,000 requests |
+
+Rate limits are tracked per API key. Every response includes the current rate limit status:
+
+```json
+{
+  "meta": {
+    "rate_limit": {
+      "limit": 100,
+      "remaining": 97,
+      "reset": 1778891947
+    }
+  }
+}
+```
+
+## When rate limited
+
+You'll receive a `429 Too Many Requests` response:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Try again later."
+  }
+}
+```
+
+Wait until the `reset` Unix timestamp before making more requests.
+
+## Pagination limits
+
+| Resource | Maximum per request |
+|----------|-------------------|
+| Keywords | 1,000 |
+| AI prompts | 200 |
+| Projects | 500 |
+| All other resources | 1,000 |
+
+## Best practices
+
+### Use webhooks instead of polling
+
+Instead of calling `GET /rankings/keywords` every 5 minutes to check for changes, subscribe to the `keywords.updated` webhook and only fetch data when positions actually update.
+
+### Batch your requests
+
+When syncing multiple data types for a project, fetch them in parallel:
+
+```javascript
+const [keywords, audits, backlinks] = await Promise.all([
+  fetch(`${base}/rankings/keywords?limit=1000`, { headers }),
+  fetch(`${base}/audits/latest`, { headers }),
+  fetch(`${base}/backlinks/summary`, { headers }),
+]);
+```
+
+This uses 3 of your rate limit instead of making sequential calls that take longer.
+
+### Cache responses
+
+Store API responses in your database and serve your UI from the cache. Only re-fetch when:
+- A webhook event signals new data is available
+- The user manually requests a refresh
+- A scheduled sync interval passes (e.g., daily for backlinks which don't have webhooks yet)
+
+### Use pagination efficiently
+
+For large datasets, use `limit` and `offset` to page through results:
+
+```javascript
+async function fetchAllKeywords(projectId) {
+  let allKeywords = [];
+  let offset = 0;
+  const limit = 1000;
+
+  while (true) {
+    const response = await fetch(
+      `${base}/rankings/keywords?limit=${limit}&offset=${offset}`,
+      { headers }
+    ).then(r => r.json());
+
+    allKeywords.push(...response.data);
+
+    if (!response.meta.pagination.has_more) break;
+    offset += limit;
+  }
+
+  return allKeywords;
+}
+```

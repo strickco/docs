@@ -1,0 +1,45 @@
+---
+title: "Manage Webhook"
+api: "GET /webhooks/{webhookId}"
+description: "Get, update, or delete a webhook subscription"
+---
+
+### GET - Get subscription details
+
+<ParamField path="webhookId" type="string" required>Webhook subscription UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/webhooks/{webhookId}" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+### PATCH - Update subscription
+
+Requires a **Read + Write** API key.
+
+<ParamField body="name" type="string">Updated display name</ParamField>
+<ParamField body="url" type="string">Updated webhook URL (must be HTTPS)</ParamField>
+<ParamField body="events" type="string[]">Updated event list</ParamField>
+<ParamField body="is_active" type="boolean">Enable or disable the subscription</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X PATCH "https://app.ranked.ai/api/v1/webhooks/{webhookId}" \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "is_active": false }'
+```
+</RequestExample>
+
+### DELETE - Delete subscription
+
+Requires a **Read + Write** API key.
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://app.ranked.ai/api/v1/webhooks/{webhookId}" \
+  -H "Authorization: Bearer rk_live_your_write_key"
+```
+</RequestExample>

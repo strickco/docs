@@ -1,0 +1,14 @@
+---
+title: "Backlink History"
+api: "GET /projects/{projectId}/backlinks/history"
+description: "Get daily new and lost backlink counts over time"
+---
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks/history" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>

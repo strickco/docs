@@ -1,0 +1,133 @@
+---
+title: "Webhook Events"
+description: "All available webhook events and their payload schemas"
+---
+
+## Event types
+
+Subscribe to any combination of these events when creating a webhook.
+
+### Content events
+
+| Event | Fires when |
+|-------|-----------|
+| `content.created` | A new content item is added to the calendar |
+| `content.status_changed` | Content status changes (approved, revising, published) |
+
+#### content.created
+
+```json
+{
+  "event": "content.created",
+  "timestamp": "2026-05-16T00:10:17.701Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "content_id": "abc-123",
+    "title": "Best Tree Care Tips for Spring",
+    "content_type": "Blog Post",
+    "scheduled_date": "2026-05-20T00:00:00Z"
+  }
+}
+```
+
+#### content.status_changed
+
+```json
+{
+  "event": "content.status_changed",
+  "timestamp": "2026-05-16T00:10:17.701Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "content_id": "abc-123",
+    "title": "Best Tree Care Tips for Spring",
+    "new_status": "Approved"
+  }
+}
+```
+
+### Audit events
+
+| Event | Fires when |
+|-------|-----------|
+| `audit.started` | A site audit begins crawling |
+| `audit.completed` | A site audit finishes and results are ready |
+
+#### audit.started
+
+```json
+{
+  "event": "audit.started",
+  "timestamp": "2026-05-16T00:10:17.701Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "audit_id": "abc-123",
+    "target_url": "https://example.com",
+    "max_crawl_pages": 200
+  }
+}
+```
+
+#### audit.completed
+
+```json
+{
+  "event": "audit.completed",
+  "timestamp": "2026-05-16T01:15:00.000Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "audit_id": "abc-123",
+    "target_url": "https://example.com",
+    "pages_crawled": 34
+  }
+}
+```
+
+<Tip>
+  After receiving `audit.completed`, call `GET /api/v1/projects/{id}/audits/latest` to fetch the full audit results.
+</Tip>
+
+### Ranking events
+
+| Event | Fires when |
+|-------|-----------|
+| `keywords.updated` | Daily keyword scan completes for a project |
+| `prompts.updated` | AI visibility analysis completes for a prompt |
+
+#### keywords.updated
+
+Fires once per project when the daily keyword position scan finishes (not per keyword).
+
+```json
+{
+  "event": "keywords.updated",
+  "timestamp": "2026-05-16T06:30:00.000Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "keywords_updated": 20,
+    "job_id": "abc-123"
+  }
+}
+```
+
+<Tip>
+  After receiving `keywords.updated`, call `GET /api/v1/projects/{id}/rankings/keywords` to fetch the latest positions.
+</Tip>
+
+#### prompts.updated
+
+Fires when all AI models have responded for a prompt analysis.
+
+```json
+{
+  "event": "prompts.updated",
+  "timestamp": "2026-05-16T00:30:51.000Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "prompt_id": "abc-123",
+    "visibility_percentage": 50,
+    "average_position": 5,
+    "best_model": "openai/gpt-5.4-nano",
+    "models_checked": 6
+  }
+}
+```

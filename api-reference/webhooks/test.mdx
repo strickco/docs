@@ -1,0 +1,45 @@
+---
+title: "Test Webhook"
+api: "POST /webhooks/{webhookId}/test"
+description: "Send a test payload to verify your webhook endpoint"
+---
+
+Sends a test payload to the webhook URL to verify connectivity and signature verification.
+
+<ParamField path="webhookId" type="string" required>Webhook subscription UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://app.ranked.ai/api/v1/webhooks/{webhookId}/test" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "message": "Test webhook delivered successfully",
+    "status_code": 200
+  }
+}
+```
+</ResponseExample>
+
+The test payload sent to your URL looks like:
+
+```json
+{
+  "event": "content.created",
+  "timestamp": "2026-05-16T01:06:30.000Z",
+  "project_id": "test-project-id",
+  "data": {
+    "test": true,
+    "message": "This is a test webhook from Ranked AI"
+  }
+}
+```
+
+It includes the same `X-Webhook-Signature` header as real deliveries, signed with your subscription's secret.

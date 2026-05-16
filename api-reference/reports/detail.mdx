@@ -1,0 +1,28 @@
+---
+title: "Report Detail"
+api: "GET /projects/{projectId}/reports/{reportId}"
+description: "Get or delete a specific report"
+---
+
+### GET - Get report details
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField path="reportId" type="string" required>Report slug ID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/reports/{reportId}" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+### DELETE - Delete a report
+
+Requires a **Read + Write** API key. Soft-deletes the report link.
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://app.ranked.ai/api/v1/projects/{projectId}/reports/{reportId}" \
+  -H "Authorization: Bearer rk_live_your_write_key"
+```
+</RequestExample>

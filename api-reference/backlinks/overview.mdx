@@ -1,0 +1,14 @@
+---
+title: "List Backlink Targets"
+api: "GET /projects/{projectId}/backlinks"
+description: "Get tracked backlink targets for a project"
+---
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>

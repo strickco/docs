@@ -1,0 +1,48 @@
+---
+title: "List Content"
+api: "GET /projects/{projectId}/content"
+description: "Get content calendar items for a project"
+---
+
+Returns content calendar items with status, type, and scheduling information.
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField query="limit" type="number" default="50">Max items to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+<ParamField query="status" type="string">Filter by status name (e.g., `Approved`, `Published`, `Needs Approval`)</ParamField>
+<ParamField query="date_from" type="string">Start date filter (ISO 8601)</ParamField>
+<ParamField query="date_to" type="string">End date filter (ISO 8601)</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/content?limit=5" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": [
+    {
+      "id": "acc6b6c5-3573-488e-b1c2-4994350c4a18",
+      "title": "How to Rebuild Intimacy After Porn Addiction",
+      "description": null,
+      "scheduled_date": "2025-10-27T00:00:00+00:00",
+      "due_date": null,
+      "status": "Published",
+      "status_color": "green",
+      "content_type": "Blog Post",
+      "content_type_color": "green",
+      "priority": 3,
+      "document_url": "https://docs.google.com/document/d/...",
+      "source_url": "https://docs.google.com/document/d/...",
+      "featured_image_url": null,
+      "created_at": "2025-09-30T15:36:19.196Z",
+      "updated_at": "2025-11-19T13:33:38.079Z"
+    }
+  ]
+}
+```
+</ResponseExample>

@@ -1,0 +1,58 @@
+---
+title: "Prompt History"
+api: "GET /projects/{projectId}/prompts/{promptId}/history"
+description: "Get AI model response history with citations for a prompt"
+---
+
+Returns the full response history from each AI model, including the response content, brand position, and cited sources.
+
+### Path parameters
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField path="promptId" type="string" required>Prompt UUID</ParamField>
+
+### Query parameters
+
+<ParamField query="limit" type="number" default="50">Max responses to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+<ParamField query="date_from" type="string">Start date (ISO 8601). Defaults to 90 days ago.</ParamField>
+<ParamField query="date_to" type="string">End date (ISO 8601)</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/prompts/{promptId}/history?limit=5" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "prompt_id": "bd17920c-61ff-4298-9116-f0a8035aabf3",
+    "prompt": "Who provides tree services for HOA properties in Sioux City, Iowa?",
+    "responses": [
+      {
+        "model": "perplexity/sonar",
+        "is_visible": true,
+        "position": 5,
+        "citations_count": 6,
+        "citations": [
+          {
+            "url": "https://siouxcitytreeco.com",
+            "title": "siouxcitytreeco.com",
+            "domain": "siouxcitytreeco.com"
+          }
+        ],
+        "response_excerpt": "Several companies in Sioux City, IA, offer professional tree services...",
+        "checked_at": "2026-05-10T00:30:51.679+00:00"
+      }
+    ]
+  },
+  "meta": {
+    "pagination": { "total": 36, "limit": 5, "offset": 0, "has_more": true }
+  }
+}
+```
+</ResponseExample>

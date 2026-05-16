@@ -1,0 +1,48 @@
+---
+title: "Latest Audit"
+api: "GET /projects/{projectId}/audits/latest"
+description: "Get the most recent completed audit with issue summary"
+---
+
+Returns the latest completed audit for a project with issue counts. Issue counts reflect the current state after any dismissals.
+
+### Path parameters
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/audits/latest" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "id": "2e8b1269-d954-4b3b-a5e5-233bd44dfc28",
+    "target_url": "https://siouxcitytreeco.com/",
+    "status": "completed",
+    "crawl_progress": 100,
+    "pages_crawled": 34,
+    "pages_in_queue": 0,
+    "total_issues": 0,
+    "critical_issues": 0,
+    "warning_issues": 0,
+    "notice_issues": 0,
+    "started_at": "2026-05-03T20:06:21.861+00:00",
+    "completed_at": "2026-05-03T21:04:36.6+00:00",
+    "created_at": "2026-05-03T20:06:21.998Z",
+    "issues_summary": {
+      "passed": 11,
+      "failed": 0,
+      "total": 11
+    }
+  }
+}
+```
+</ResponseExample>
+
+Returns `404` if no completed audit exists for the project.

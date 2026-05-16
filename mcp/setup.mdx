@@ -1,0 +1,59 @@
+---
+title: "MCP Setup"
+description: "Connect your Ranked AI account to AI tools via MCP"
+---
+
+## ChatGPT
+
+1. Open **ChatGPT Settings > Connected Apps**
+2. Search for **Ranked** and click **Connect**
+3. Sign in with your Ranked AI account to authorize access
+4. Start asking about your SEO data in any ChatGPT conversation
+
+### Example prompts
+
+```
+How are my keyword rankings doing this month?
+```
+
+```
+What's my AI visibility across all models?
+```
+
+```
+Show me my latest audit results
+```
+
+## Claude Desktop
+
+Add to your Claude Desktop MCP config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
+
+```json
+{
+  "mcpServers": {
+    "ranked-ai": {
+      "url": "https://app.ranked.ai/api/mcp/sse"
+    }
+  }
+}
+```
+
+You'll be prompted to authorize on first use.
+
+## Cursor
+
+1. Open **Cursor Settings > MCP**
+2. Add a new MCP server with URL: `https://app.ranked.ai/api/mcp/sse`
+3. Authenticate when prompted
+
+## Authentication
+
+The MCP integration uses **OAuth 2.0** with authorization code flow. When you first connect, you'll be redirected to sign in with your Ranked AI account. Access tokens are automatically refreshed.
+
+- Access tokens expire after 24 hours
+- Refresh tokens last 30 days
+- Scope: `read:projects` (read access to all project data)
+
+<Info>
+  The MCP integration has read and write access to your project data. Write actions (like approving content) show a confirmation prompt before executing.
+</Info>

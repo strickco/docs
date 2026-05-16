@@ -1,0 +1,49 @@
+---
+title: "Audit Issues"
+api: "GET /projects/{projectId}/audits/{auditId}/issues"
+description: "Get issues for a specific audit sorted by severity"
+---
+
+Returns audit issues sorted by severity (critical, warning, notice) then by affected count.
+
+### Path parameters
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField path="auditId" type="string" required>Audit task UUID</ParamField>
+
+### Query parameters
+
+<ParamField query="limit" type="number" default="50">Max issues to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+<ParamField query="severity" type="string">Filter: `critical`, `warning`, or `notice`</ParamField>
+<ParamField query="status" type="string">Filter: `passed` or `failed`</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/audits/{auditId}/issues?severity=critical" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": [
+    {
+      "id": "a27fd070-0b6f-47bf-8efe-2b130db0111d",
+      "type": "no_h1_tag",
+      "severity": "critical",
+      "title": "Missing H1 Tags",
+      "description": "Pages without H1 tags",
+      "affected_count": 3,
+      "status": "failed",
+      "created_at": "2026-05-03T21:04:36.6+00:00"
+    }
+  ],
+  "meta": {
+    "pagination": { "total": 11, "limit": 50, "offset": 0, "has_more": false }
+  }
+}
+```
+</ResponseExample>

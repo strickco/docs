@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Ranked AI",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#000000",
+    "light": "#16A34A",
+    "dark": "#22C55E"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,59 +14,107 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "MCP Integration",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "mcp/overview",
+              "mcp/setup",
+              "mcp/tools"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Webhooks",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/components",
-              "essentials/reusable-snippets"
+              "webhooks/overview",
+              "webhooks/events",
+              "webhooks/security"
             ]
           },
           {
-            "group": "Agent ready",
+            "group": "Best Practices",
             "pages": [
-              "agent-ready/prompt",
-              "agent-ready/visibility",
-              "agent-ready/contextual",
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/agency-dashboard",
+              "guides/rate-limits"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Projects",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/projects/list"
+            ]
+          },
+          {
+            "group": "Keywords",
+            "pages": [
+              "api-reference/keywords/list",
+              "api-reference/keywords/history"
+            ]
+          },
+          {
+            "group": "AI Visibility",
+            "pages": [
+              "api-reference/prompts/list",
+              "api-reference/prompts/detail",
+              "api-reference/prompts/history"
+            ]
+          },
+          {
+            "group": "Audits",
+            "pages": [
+              "api-reference/audits/list",
+              "api-reference/audits/latest",
+              "api-reference/audits/issues"
+            ]
+          },
+          {
+            "group": "Backlinks",
+            "pages": [
+              "api-reference/backlinks/overview",
+              "api-reference/backlinks/summary",
+              "api-reference/backlinks/domains",
+              "api-reference/backlinks/history",
+              "api-reference/backlinks/anchors"
+            ]
+          },
+          {
+            "group": "Content",
+            "pages": [
+              "api-reference/content/list",
+              "api-reference/content/detail",
+              "api-reference/content/preferences"
+            ]
+          },
+          {
+            "group": "Reports",
+            "pages": [
+              "api-reference/reports/list",
+              "api-reference/reports/detail"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/webhooks/list",
+              "api-reference/webhooks/manage",
+              "api-reference/webhooks/test"
             ]
           }
         ]
@@ -75,14 +123,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Dashboard",
+          "href": "https://app.ranked.ai",
+          "icon": "gauge"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "href": "https://app.ranked.ai",
+          "icon": "life-ring"
         }
       ]
     }
@@ -94,33 +142,22 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Dashboard",
+        "href": "https://app.ranked.ai"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/rankedai",
+      "linkedin": "https://linkedin.com/company/ranked-ai"
+    }
+  },
+  "api": {
+    "baseUrl": "https://app.ranked.ai/api/v1",
+    "auth": {
+      "method": "bearer",
+      "name": "Authorization"
     }
   }
 }

@@ -1,33 +1,89 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Complete reference for the Ranked AI REST API v1"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+https://app.ranked.ai/api/v1
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All requests require a Bearer token:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```bash
+curl https://app.ranked.ai/api/v1/projects \
+  -H "Authorization: Bearer rk_live_your_api_key"
 ```
+
+Create API keys from **Settings > API** in your [dashboard](https://app.ranked.ai/dashboard/settings?tab=api-keys).
+
+## Endpoints
+
+### Projects
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects` | List your SEO projects |
+
+### Keywords
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects/{id}/rankings/keywords` | List keyword positions |
+| GET | `/projects/{id}/rankings/keywords/{keywordId}/history` | Position history for a keyword |
+
+### AI Visibility
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects/{id}/prompts` | List AI visibility prompts |
+| GET | `/projects/{id}/prompts/{promptId}` | Prompt detail with per-model data |
+| GET | `/projects/{id}/prompts/{promptId}/history` | Response history with citations |
+
+### Audits
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects/{id}/audits` | List audit tasks |
+| GET | `/projects/{id}/audits/latest` | Most recent completed audit |
+| GET | `/projects/{id}/audits/{auditId}/issues` | Issues for a specific audit |
+
+### Backlinks
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects/{id}/backlinks` | Tracked backlink targets |
+| GET | `/projects/{id}/backlinks/summary` | Aggregated backlink metrics |
+| GET | `/projects/{id}/backlinks/domains` | Referring domains |
+| GET | `/projects/{id}/backlinks/history` | Daily new/lost history |
+| GET | `/projects/{id}/backlinks/anchors` | Anchor text analysis |
+
+### Content
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/projects/{id}/content` | Content calendar items |
+| GET | `/projects/{id}/content/{contentId}` | Content detail with body |
+| GET, PATCH | `/projects/{id}/content/preferences` | Content preferences |
+
+### Reports
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET, POST | `/projects/{id}/reports` | List or create report links |
+| GET, DELETE | `/projects/{id}/reports/{reportId}` | Get or delete a report |
+
+### Webhooks
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET, POST | `/webhooks` | List or create webhook subscriptions |
+| GET, PATCH, DELETE | `/webhooks/{webhookId}` | Manage a webhook |
+| POST | `/webhooks/{webhookId}/test` | Send a test delivery |
+
+<Note>
+  POST, PATCH, and DELETE endpoints require an API key with **Read + Write** permissions.
+</Note>

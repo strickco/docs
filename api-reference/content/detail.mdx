@@ -1,0 +1,15 @@
+---
+title: "Content Detail"
+api: "GET /projects/{projectId}/content/{contentId}"
+description: "Get full details for a content item including body"
+---
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField path="contentId" type="string" required>Content item UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/content/{contentId}" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>

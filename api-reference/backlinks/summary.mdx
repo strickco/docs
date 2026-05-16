@@ -1,0 +1,35 @@
+---
+title: "Backlink Summary"
+api: "GET /projects/{projectId}/backlinks/summary"
+description: "Get aggregated backlink metrics for a project"
+---
+
+Returns total backlinks, referring domains, and dofollow/nofollow breakdown.
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/backlinks/summary" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "data": {
+    "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+    "total_backlinks": 58,
+    "total_referring_domains": 54,
+    "average_domain_rank": 0,
+    "dofollow_backlinks": 0,
+    "nofollow_backlinks": 0,
+    "broken_backlinks": 0,
+    "tracked_domains_count": 1,
+    "last_updated": "2026-05-02"
+  }
+}
+```
+</ResponseExample>

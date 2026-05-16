@@ -1,0 +1,58 @@
+---
+title: "Reports"
+api: "GET /projects/{projectId}/reports"
+description: "List or create shareable SEO report links"
+---
+
+### GET - List reports
+
+<ParamField path="projectId" type="string" required>Project UUID</ParamField>
+<ParamField query="limit" type="number" default="50">Max reports to return</ParamField>
+<ParamField query="offset" type="number" default="0">Number to skip</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://app.ranked.ai/api/v1/projects/{projectId}/reports" \
+  -H "Authorization: Bearer rk_live_your_api_key"
+```
+</RequestExample>
+
+### POST - Create a report
+
+Requires a **Read + Write** API key.
+
+<ParamField body="title" type="string" required>Report title</ParamField>
+<ParamField body="date_range" type="string" required>
+  `7days`, `30days`, `90days`, or `custom`
+</ParamField>
+<ParamField body="custom_start_date" type="string">
+  Start date (ISO 8601). Required when `date_range` is `custom`.
+</ParamField>
+<ParamField body="custom_end_date" type="string">
+  End date (ISO 8601). Required when `date_range` is `custom`.
+</ParamField>
+<ParamField body="description" type="string">Optional report description</ParamField>
+
+<RequestExample>
+```bash Preset range
+curl -X POST "https://app.ranked.ai/api/v1/projects/{projectId}/reports" \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Monthly SEO Report",
+    "date_range": "30days"
+  }'
+```
+
+```bash Custom range
+curl -X POST "https://app.ranked.ai/api/v1/projects/{projectId}/reports" \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Q1 2026 Report",
+    "date_range": "custom",
+    "custom_start_date": "2026-01-01",
+    "custom_end_date": "2026-03-31"
+  }'
+```
+</RequestExample>

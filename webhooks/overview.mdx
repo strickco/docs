@@ -1,0 +1,101 @@
+---
+title: "Webhooks Overview"
+description: "Receive real-time notifications when data changes in your Ranked AI projects"
+---
+
+## How webhooks work
+
+Instead of polling the API for changes, webhooks push notifications to your server when events occur. When a keyword position updates, content gets approved, or an audit completes, we send an HTTP POST to your registered URL.
+
+```
+Your App                    Ranked AI
+   |                           |
+   |  POST /api/v1/webhooks    |
+   |  (subscribe to events)    |
+   |-------------------------->|
+   |                           |
+   |                           |  keyword positions update
+   |                           |  ----------------------->
+   |   POST https://your.app   |
+   |   (event payload)         |
+   |<--------------------------|
+   |                           |
+   |   200 OK                  |
+   |-------------------------->|
+```
+
+## Quick setup
+
+### 1. Create a webhook subscription
+
+Requires a **Read + Write** API key:
+
+```bash
+curl -X POST https://app.ranked.ai/api/v1/webhooks \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Dashboard",
+    "url": "https://your-app.com/webhooks/ranked",
+    "project_id": "your-project-uuid",
+    "events": ["keywords.updated", "content.status_changed", "audit.completed"]
+  }'
+```
+
+### 2. Handle incoming webhooks
+
+```javascript
+app.post('/webhooks/ranked', (req, res) => {
+  const event = req.body;
+
+  switch (event.event) {
+    case 'keywords.updated':
+      // Sync latest keyword positions
+      syncKeywords(event.project_id, event.data.keywords_updated);
+      break;
+    case 'content.status_changed':
+      // Update content tracker
+      updateContent(event.data.content_id, event.data.new_status);
+      break;
+    case 'audit.completed':
+      // Pull latest audit results
+      fetchAuditResults(event.data.audit_id);
+      break;
+  }
+
+  res.status(200).send('OK');
+});
+```
+
+### 3. Verify the signature
+
+Every webhook includes an HMAC-SHA256 signature for verification. See [Webhook Security](/webhooks/security).
+
+## Webhook payload format
+
+```json
+{
+  "event": "keywords.updated",
+  "timestamp": "2026-05-16T00:10:17.701Z",
+  "project_id": "40596405-c27c-4dfc-89e4-142c87846d66",
+  "data": {
+    "keywords_updated": 20,
+    "job_id": "abc-123"
+  }
+}
+```
+
+## Delivery behavior
+
+| Behavior | Details |
+|----------|---------|
+| **Retries** | 3 attempts with exponential backoff (1s, 2s, 4s) |
+| **Timeout** | 30 seconds per delivery attempt |
+| **Auto-disable** | Subscription disabled after 5 consecutive failures |
+| **Re-enable** | Update the subscription via API to set `is_active: true` |
+
+## Requirements
+
+- Webhook URL must use **HTTPS**
+- Your endpoint must return a **2xx** status code within 30 seconds
+- Payload is sent as **JSON** with `Content-Type: application/json`
