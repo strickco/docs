@@ -20,6 +20,28 @@ curl https://app.ranked.ai/api/v1/projects \
 
 Create API keys from **Settings > API** in your [dashboard](https://app.ranked.ai/dashboard/settings?tab=api-keys).
 
+## How it works
+
+All data in the API is organized by **project**. A project represents one website you're tracking.
+
+```
+GET /projects                              → list your projects (get project IDs)
+GET /projects/{projectId}/rankings/keywords → keyword data for that project
+GET /projects/{projectId}/audits/latest     → audit data for that project
+GET /projects/{projectId}/prompts           → AI visibility for that project
+...
+```
+
+**Step 1:** Call `GET /projects` to get your project IDs.
+
+**Step 2:** Use a project ID in all other endpoints to fetch keywords, audits, backlinks, content, prompts, and reports for that specific project.
+
+**Step 3 (optional):** Set up webhooks with a project ID to receive notifications when data changes for that project.
+
+<Info>
+  Each API key can access all projects owned by the account that created it. If you manage multiple client websites, they'll all appear in the projects list.
+</Info>
+
 ## Endpoints
 
 ### Projects
