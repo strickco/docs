@@ -9,20 +9,19 @@ Agencies can build custom dashboards on top of Ranked AI's data using the REST A
 
 ## Architecture
 
-```
-┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Your Dashboard  │────>│  Ranked API  │────>│  Your Database  │
-│  (Frontend)      │     │  (Data Pull)  │     │  (Cache)        │
-└─────────────────┘     └──────────────┘     └─────────────────┘
-                              │
-                              │ Webhooks
-                              ▼
-                        ┌──────────────┐
-                        │  Your Server  │
-                        │  (Webhook     │
-                        │   Handler)    │
-                        └──────────────┘
-```
+Your dashboard pulls data from the API and caches it locally. Webhooks push updates so you don't need to poll.
+
+<Steps>
+  <Step title="API pulls data into your database">
+    Your server calls the Ranked AI API to fetch keywords, audits, backlinks, and other data, then stores it in your database.
+  </Step>
+  <Step title="Webhooks push real-time updates">
+    When keyword positions update or content changes, Ranked AI sends a webhook to your server with the event details.
+  </Step>
+  <Step title="Your dashboard reads from the cache">
+    Your frontend reads from your local database instead of calling the API on every page load. Fast and always available.
+  </Step>
+</Steps>
 
 ## Step 1: Discover projects
 

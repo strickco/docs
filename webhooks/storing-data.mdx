@@ -1,0 +1,134 @@
+---
+title: "Storing Webhook Data"
+description: "Best practices for persisting webhook events in your database"
+---
+
+## Why store webhook data
+
+Webhook events are delivered once (with retries). If your server is down or you need historical data, you'll want to persist events in your own database. This is especially important for:
+
+- **Building dashboards** -- cached data means faster page loads and no API calls per user visit
+- **Historical tracking** -- compare keyword positions over time beyond what the API returns
+- **Audit trails** -- record when content was approved, audits completed, etc.
+
+## What to store
+
+### Keyword position snapshots
+
+When you receive a `keywords.updated` event, fetch and store the full keyword data:
+
+```sql
+CREATE TABLE keyword_snapshots (
+  id SERIAL PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  keyword_id TEXT NOT NULL,
+  keyword TEXT NOT NULL,
+  desktop_position INTEGER,
+  mobile_position INTEGER,
+  ai_mode_position INTEGER,
+  maps_position INTEGER,
+  net_change INTEGER,
+  location TEXT,
+  recorded_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_snapshots_project ON keyword_snapshots(project_id, recorded_at);
+CREATE INDEX idx_snapshots_keyword ON keyword_snapshots(keyword_id, recorded_at);
+```
+
+### Webhook event log
+
+Store every webhook event for debugging and replay:
+
+```sql
+CREATE TABLE webhook_events (
+  id SERIAL PRIMARY KEY,
+  event_type TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  signature TEXT,
+  processed_at TIMESTAMP DEFAULT NOW(),
+  status TEXT DEFAULT 'received'
+);
+
+CREATE INDEX idx_events_type ON webhook_events(event_type, processed_at);
+```
+
+## Processing pattern
+
+Always store the raw event first, then process it. This ensures you never lose data even if processing fails:
+
+```javascript
+app.post('/webhooks/ranked', express.raw({ type: 'application/json' }), async (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const payload = req.body.toString();
+
+  // Verify signature
+  if (!verifyWebhook(payload, signature, process.env.RANKED_WEBHOOK_SECRET)) {
+    return res.status(401).send();
+  }
+
+  const event = JSON.parse(payload);
+
+  // 1. Store raw event immediately
+  await db.query(
+    'INSERT INTO webhook_events (event_type, project_id, payload, signature) VALUES ($1, $2, $3, $4)',
+    [event.event, event.project_id, event, signature]
+  );
+
+  // 2. Return 200 quickly
+  res.status(200).send('OK');
+
+  // 3. Process asynchronously
+  try {
+    await processEvent(event);
+    await db.query("UPDATE webhook_events SET status = 'processed' WHERE payload->>'timestamp' = $1", [event.timestamp]);
+  } catch (err) {
+    await db.query("UPDATE webhook_events SET status = 'failed' WHERE payload->>'timestamp' = $1", [event.timestamp]);
+    console.error('Failed to process event:', err);
+  }
+});
+```
+
+## Handling duplicates
+
+The same event may be delivered more than once during retries. Use the event timestamp and type as a deduplication key:
+
+```javascript
+async function processEvent(event) {
+  // Check if already processed
+  const existing = await db.query(
+    "SELECT id FROM webhook_events WHERE event_type = $1 AND payload->>'timestamp' = $2 AND status = 'processed'",
+    [event.event, event.timestamp]
+  );
+
+  if (existing.rows.length > 0) {
+    console.log('Duplicate event, skipping');
+    return;
+  }
+
+  // Process the event...
+}
+```
+
+## Data retention
+
+Consider how long you need to keep data:
+
+| Data | Suggested retention | Reason |
+|------|-------------------|--------|
+| Keyword snapshots | 12+ months | Track long-term ranking trends |
+| Webhook event log | 30-90 days | Debugging and replay |
+| Audit results | 6+ months | Compare site health over time |
+| Content events | 90 days | Activity audit trail |
+
+For long-term keyword data, consider aggregating old daily snapshots into weekly or monthly summaries to save storage.
+
+## Database recommendations
+
+| Use case | Recommended |
+|----------|-------------|
+| Simple setup | [Supabase](https://supabase.com/) (PostgreSQL, free tier available) |
+| Already using Postgres | Your existing PostgreSQL database |
+| High volume analytics | [ClickHouse](https://clickhouse.com/) for time-series data |
+| Serverless | [Neon](https://neon.tech/) or [PlanetScale](https://planetscale.com/) |
