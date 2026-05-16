@@ -1,0 +1,119 @@
+---
+title: "Keyword Ranking Monitor"
+description: "Build a simple ranking monitor that tracks position changes over time"
+---
+
+## Overview
+
+A Node.js script that pulls keyword rankings daily, stores them in a local database, and generates a summary of changes.
+
+## Full example
+
+```javascript
+const Database = require('better-sqlite3');
+
+const API_KEY = process.env.RANKED_API_KEY;
+const PROJECT_ID = process.env.RANKED_PROJECT_ID;
+const BASE = `https://app.ranked.ai/api/v1/projects/${PROJECT_ID}`;
+const headers = { 'Authorization': `Bearer ${API_KEY}` };
+
+// Initialize SQLite database
+const db = new Database('rankings.db');
+db.exec(`
+  CREATE TABLE IF NOT EXISTS snapshots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword_id TEXT,
+    keyword TEXT,
+    desktop INTEGER,
+    mobile INTEGER,
+    ai_mode INTEGER,
+    maps INTEGER,
+    net_change INTEGER,
+    recorded_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+async function fetchAndStore() {
+  let offset = 0;
+  const limit = 1000;
+  let total = 0;
+
+  while (true) {
+    const response = await fetch(
+      `${BASE}/rankings/keywords?limit=${limit}&offset=${offset}`,
+      { headers }
+    );
+    const { data, meta } = await response.json();
+
+    const insert = db.prepare(`
+      INSERT INTO snapshots (keyword_id, keyword, desktop, mobile, ai_mode, maps, net_change)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const batch = db.transaction((keywords) => {
+      for (const kw of keywords) {
+        insert.run(
+          kw.id, kw.keyword,
+          kw.desktop_position, kw.mobile_position,
+          kw.ai_mode_position, kw.maps_position,
+          kw.net_change
+        );
+      }
+    });
+
+    batch(data);
+    total += data.length;
+
+    if (!meta.pagination.has_more) break;
+    offset += limit;
+  }
+
+  console.log(`Stored ${total} keyword snapshots`);
+}
+
+function generateReport() {
+  const today = new Date().toISOString().split('T')[0];
+
+  const improved = db.prepare(`
+    SELECT keyword, net_change FROM snapshots
+    WHERE date(recorded_at) = date(?) AND net_change > 0
+    ORDER BY net_change DESC LIMIT 10
+  `).all(today);
+
+  const declined = db.prepare(`
+    SELECT keyword, net_change FROM snapshots
+    WHERE date(recorded_at) = date(?) AND net_change < 0
+    ORDER BY net_change ASC LIMIT 10
+  `).all(today);
+
+  console.log('\n--- Daily Ranking Report ---\n');
+
+  if (improved.length > 0) {
+    console.log('Top Improvements:');
+    improved.forEach(kw => console.log(`  ${kw.keyword}: +${kw.net_change}`));
+  }
+
+  if (declined.length > 0) {
+    console.log('\nBiggest Declines:');
+    declined.forEach(kw => console.log(`  ${kw.keyword}: ${kw.net_change}`));
+  }
+
+  if (improved.length === 0 && declined.length === 0) {
+    console.log('No ranking changes today.');
+  }
+}
+
+// Run
+fetchAndStore().then(generateReport);
+```
+
+## Running daily
+
+Use cron (Linux/Mac) or Task Scheduler (Windows):
+
+```bash
+# Run daily at 7am
+0 7 * * * cd /path/to/project && node monitor.js >> /var/log/rankings.log 2>&1
+```
+
+Or use the `keywords.updated` webhook to trigger automatically when the scan completes instead of running on a fixed schedule.

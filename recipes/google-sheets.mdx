@@ -1,0 +1,128 @@
+---
+title: "Sync to Google Sheets"
+description: "Automatically sync keyword rankings to a Google Sheet"
+---
+
+## Overview
+
+Pull keyword ranking data from the Ranked AI API and write it to a Google Sheet on a daily schedule using Google Apps Script.
+
+## Step 1: Create the Apps Script
+
+Open your Google Sheet, go to **Extensions > Apps Script**, and paste:
+
+```javascript
+const API_KEY = 'rk_live_your_api_key';
+const PROJECT_ID = 'your-project-id';
+const BASE_URL = 'https://app.ranked.ai/api/v1';
+
+function syncKeywords() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Keywords');
+  if (!sheet) {
+    SpreadsheetApp.getActiveSpreadsheet().insertSheet('Keywords');
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Keywords');
+  }
+
+  // Fetch keywords from API
+  const response = UrlFetchApp.fetch(
+    `${BASE_URL}/projects/${PROJECT_ID}/rankings/keywords?limit=1000`,
+    {
+      headers: { 'Authorization': `Bearer ${API_KEY}` },
+      muteHttpExceptions: true
+    }
+  );
+
+  const data = JSON.parse(response.getContentText());
+  if (!data.success) {
+    Logger.log('API error: ' + JSON.stringify(data.error));
+    return;
+  }
+
+  // Clear and write headers
+  sheet.clear();
+  sheet.appendRow([
+    'Keyword', 'Desktop', 'Mobile', 'AI Mode', 'Maps',
+    'Net Change', 'Location', 'Last Checked'
+  ]);
+
+  // Write keyword data
+  data.data.forEach(kw => {
+    sheet.appendRow([
+      kw.keyword,
+      kw.desktop_position || '—',
+      kw.mobile_position || '—',
+      kw.ai_mode_position || '—',
+      kw.maps_position || '—',
+      kw.net_change,
+      kw.location,
+      kw.last_checked ? new Date(kw.last_checked).toLocaleDateString() : '—'
+    ]);
+  });
+
+  // Format header row
+  const headerRange = sheet.getRange(1, 1, 1, 8);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#f3f4f6');
+
+  Logger.log(`Synced ${data.data.length} keywords`);
+}
+```
+
+## Step 2: Set up a daily trigger
+
+In Apps Script, go to **Triggers** (clock icon) and create a time-driven trigger:
+
+- Function: `syncKeywords`
+- Event source: Time-driven
+- Type: Day timer
+- Time: 6:00 AM - 7:00 AM (after the daily scan completes)
+
+## Step 3: Run manually to test
+
+Click the **Run** button in Apps Script to test. Your Google Sheet should populate with all keyword data.
+
+## Adding AI Visibility data
+
+Add another function to sync AI prompt data to a second sheet:
+
+```javascript
+function syncPrompts() {
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AI Visibility');
+  if (!sheet) {
+    SpreadsheetApp.getActiveSpreadsheet().insertSheet('AI Visibility');
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AI Visibility');
+  }
+
+  const response = UrlFetchApp.fetch(
+    `${BASE_URL}/projects/${PROJECT_ID}/prompts?limit=200`,
+    {
+      headers: { 'Authorization': `Bearer ${API_KEY}` },
+      muteHttpExceptions: true
+    }
+  );
+
+  const data = JSON.parse(response.getContentText());
+  if (!data.success) return;
+
+  sheet.clear();
+  sheet.appendRow([
+    'Prompt', 'Visibility %', 'Avg Position',
+    'Best Model', 'AI Search Volume', 'Citations'
+  ]);
+
+  data.data.forEach(prompt => {
+    sheet.appendRow([
+      prompt.prompt,
+      prompt.visibility_percentage + '%',
+      prompt.average_position || '—',
+      prompt.best_model || '—',
+      prompt.ai_search_volume || '—',
+      prompt.total_citations
+    ]);
+  });
+
+  const headerRange = sheet.getRange(1, 1, 1, 6);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#f3f4f6');
+}
+```

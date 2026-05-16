@@ -45,13 +45,13 @@
             ]
           },
           {
-            "group": "Resources",
+            "group": "Recipes",
             "pages": [
-              "changelog",
-              "support"
+              "recipes/slack-alerts",
+              "recipes/google-sheets",
+              "recipes/ranking-monitor"
             ]
-          }
-        ]
+          }        ]
       },
       {
         "tab": "API Reference",
@@ -135,8 +135,13 @@
           "icon": "gauge"
         },
         {
+          "anchor": "Changelog",
+          "href": "/changelog",
+          "icon": "clock-rotate-left"
+        },
+        {
           "anchor": "Support",
-          "href": "https://app.ranked.ai",
+          "href": "/support",
           "icon": "life-ring"
         }
       ]

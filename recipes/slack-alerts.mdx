@@ -1,0 +1,126 @@
+---
+title: "Slack Ranking Alerts"
+description: "Get Slack notifications when keyword positions change"
+---
+
+## Overview
+
+Set up a webhook that sends Slack messages when your keyword positions update. You'll receive a daily summary after each scan completes.
+
+## Prerequisites
+
+- A Ranked AI API key with **Read + Write** access
+- A [Slack Incoming Webhook URL](https://api.slack.com/messaging/webhooks)
+
+## Step 1: Create a webhook endpoint
+
+Build a simple server that receives Ranked AI webhooks and forwards to Slack:
+
+```javascript
+const express = require('express');
+const crypto = require('crypto');
+const app = express();
+
+const RANKED_WEBHOOK_SECRET = process.env.RANKED_WEBHOOK_SECRET;
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const RANKED_API_KEY = process.env.RANKED_API_KEY;
+
+function verifySignature(payload, signature) {
+  const expected = 'sha256=' + crypto
+    .createHmac('sha256', RANKED_WEBHOOK_SECRET)
+    .update(payload)
+    .digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+}
+
+app.post('/webhooks/ranked', express.raw({ type: 'application/json' }), async (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  if (!verifySignature(req.body.toString(), signature)) {
+    return res.status(401).send();
+  }
+
+  const event = JSON.parse(req.body);
+
+  if (event.event === 'keywords.updated') {
+    await handleKeywordsUpdated(event);
+  }
+
+  res.status(200).send('OK');
+});
+
+async function handleKeywordsUpdated(event) {
+  // Fetch latest keyword data
+  const response = await fetch(
+    `https://app.ranked.ai/api/v1/projects/${event.project_id}/rankings/keywords?limit=1000`,
+    { headers: { 'Authorization': `Bearer ${RANKED_API_KEY}` } }
+  );
+  const { data: keywords } = await response.json();
+
+  // Find significant changes
+  const improved = keywords.filter(kw => kw.net_change > 0);
+  const declined = keywords.filter(kw => kw.net_change < 0);
+
+  if (improved.length === 0 && declined.length === 0) return;
+
+  // Build Slack message
+  const blocks = [
+    {
+      type: 'header',
+      text: { type: 'plain_text', text: 'Keyword Rankings Update' }
+    }
+  ];
+
+  if (improved.length > 0) {
+    const top5 = improved.sort((a, b) => b.net_change - a.net_change).slice(0, 5);
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `*Improved (${improved.length})*\n` +
+          top5.map(kw => `${kw.keyword}: +${kw.net_change} positions`).join('\n')
+      }
+    });
+  }
+
+  if (declined.length > 0) {
+    const top5 = declined.sort((a, b) => a.net_change - b.net_change).slice(0, 5);
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `*Declined (${declined.length})*\n` +
+          top5.map(kw => `${kw.keyword}: ${kw.net_change} positions`).join('\n')
+      }
+    });
+  }
+
+  // Send to Slack
+  await fetch(SLACK_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ blocks })
+  });
+}
+
+app.listen(3001, () => console.log('Webhook server running on port 3001'));
+```
+
+## Step 2: Register the webhook
+
+```bash
+curl -X POST https://app.ranked.ai/api/v1/webhooks \
+  -H "Authorization: Bearer rk_live_your_write_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Slack Alerts",
+    "url": "https://your-server.com/webhooks/ranked",
+    "project_id": "your-project-id",
+    "events": ["keywords.updated"]
+  }'
+```
+
+Save the `secret` from the response as your `RANKED_WEBHOOK_SECRET` environment variable.
+
+## Result
+
+You'll receive a Slack message once per day after the keyword scan completes, showing which keywords improved or declined.
