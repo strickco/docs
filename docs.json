@@ -156,10 +156,15 @@
     "options": [
       "copy",
       "view",
+      "assistant",
       "chatgpt",
       "claude",
       "perplexity",
+      "grok",
+      "aistudio",
+      "windsurf",
       "mcp",
+      "add-mcp",
       "cursor",
       "vscode"
     ]
