@@ -44,14 +44,6 @@
               "guides/agency-dashboard",
               "guides/rate-limits"
             ]
-          },
-          {
-            "group": "Recipes",
-            "pages": [
-              "recipes/slack-alerts",
-              "recipes/google-sheets",
-              "recipes/ranking-monitor"
-            ]
           }        ]
       },
       {
