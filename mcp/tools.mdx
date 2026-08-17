@@ -3,6 +3,25 @@ title: "MCP Tool Reference"
 description: "Detailed reference for all MCP tools"
 ---
 
+## Read tools
+
+## ranked_get_project_overview
+
+List all your projects, or get detailed metrics for one project. Call this first — every other tool needs a `project_id` from it.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | No | Project UUID. Omit to list all accessible projects |
+
+### Response includes
+
+- Without `project_id`: every accessible project with keyword, AI prompt, and audit issue counts
+- With `project_id`: average position, AI visibility, audit issue counts by severity, backlink totals, and content calendar counts
+
+---
+
 ## ranked_get_keyword_rankings
 
 Get keyword positions across all search channels with position changes.
@@ -73,6 +92,20 @@ Get the latest audit results scoped to the most recent audit task.
 
 ---
 
+## ranked_get_audit_details
+
+Get the affected URLs for a specific audit issue. Use `ranked_get_audit_summary` first to get issue IDs.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `issue_id` | string | Yes | Audit issue UUID from `ranked_get_audit_summary` |
+| `limit` | number | No | Max affected items to return (default: 20, max: 50) |
+
+---
+
 ## ranked_get_backlink_summary
 
 Get backlink profile overview.
@@ -104,6 +137,34 @@ Get content calendar items.
 | `project_id` | string | Yes | Project UUID |
 | `limit` | number | No | Max items (default: 30, max: 50) |
 | `status` | string | No | Filter by status name (e.g., `Approved`, `Published`) |
+
+---
+
+## ranked_get_heatmaps
+
+Get local SEO heatmaps showing how the business ranks across a geographic grid in Google Maps.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `limit` | number | No | Max heatmaps to return (default: 10, max: 20) |
+| `heatmap_type` | string | No | Filter: `competition` or `ranking` |
+
+---
+
+## ranked_get_sitemap_indexing
+
+Get sitemap URLs and their Google indexing status.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `limit` | number | No | Max URLs to return (default: 50, max: 100) |
+| `indexed_status` | string | No | Filter: `submitted`, `indexed`, or `not_indexed` |
 
 ---
 
@@ -151,3 +212,143 @@ Get Google Analytics traffic data. Requires the project to have Google Analytics
 - Daily sessions/users breakdown
 - Channel breakdown (organic, direct, referral, ...) with sessions, users, and new users
 
+---
+
+## Write tools
+
+## ranked_add_keywords
+
+Add keywords to track in Google search results. Duplicates are automatically skipped.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `keywords` | string[] | Yes | Keyword strings to track |
+| `location` | string | No | Target location, e.g. `Waterbury, Connecticut, United States` (default: `United States`) |
+
+---
+
+## ranked_remove_keywords
+
+Remove tracked keywords by ID. Use `ranked_get_keyword_rankings` first to get keyword IDs.
+
+<Warning>
+  This permanently deletes the keywords and their position history.
+</Warning>
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `keyword_ids` | string[] | Yes | Keyword UUIDs to remove |
+
+---
+
+## ranked_add_prompts
+
+Add prompts to track brand visibility across 6 AI models. Prompts should be natural questions someone would ask an AI assistant, without mentioning the brand name.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `prompts` | string[] | Yes | Prompt questions to track |
+| `target_location` | string | No | Target location (default: `Global`) |
+
+---
+
+## ranked_request_topic
+
+Submit a topic request for content generation. The topic is queued for article creation.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `topic` | string | Yes | The topic or article title to request |
+| `description` | string | No | Optional context or brief for the content |
+
+---
+
+## ranked_approve_content
+
+Approve a content item for publishing. Sets the status to `Approved` and adds it to the publishing queue. Use `ranked_get_content_calendar` first to get content IDs.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `content_id` | string | Yes | Content calendar item UUID |
+
+---
+
+## ranked_request_revision
+
+Request a revision on a content item. Sets the status to `Revising` and attaches the revision notes.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `content_id` | string | Yes | Content calendar item UUID |
+| `notes` | string | Yes | What needs to be changed |
+
+---
+
+## ranked_generate_report
+
+Generate a shareable SEO report link covering keywords, AI visibility, audits, backlinks, and analytics.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `date_range` | string | No | `7days`, `30days`, `90days`, or `lastMonth` |
+| `title` | string | No | Custom report title |
+
+---
+
+## ranked_run_audit
+
+Start a technical SEO audit that crawls the project website for issues. Results are available via `ranked_get_audit_summary` once the crawl completes.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `max_pages` | number | No | Maximum pages to crawl (default: 100, max: 500) |
+
+---
+
+## ranked_update_content_preferences
+
+Update the project's content preferences (tone, style, topics, guidelines). This overwrites the existing content preferences text.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `preferences` | string | Yes | The new content preferences text |
+
+---
+
+## ranked_update_publishing_preferences
+
+Update the project's publishing preferences (schedule, formatting, SEO guidelines). This overwrites the existing publishing preferences text.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `publishing_preferences` | string | Yes | The new publishing preferences text |
