@@ -105,3 +105,49 @@ Get content calendar items.
 | `limit` | number | No | Max items (default: 30, max: 50) |
 | `status` | string | No | Filter by status name (e.g., `Approved`, `Published`) |
 
+---
+
+## ranked_get_search_console_metrics
+
+Get Google Search Console traffic data. Requires the project to have Google Search Console connected. GSC keeps around 16 months of history, and the most recent 2-3 days can be partial while Google finalizes them.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `days` | number | No | Trailing window in days (default: 30, max: 500). Ignored when `start_date` is set |
+| `start_date` | string | No | `YYYY-MM-DD` exact window start, overrides `days` |
+| `end_date` | string | No | `YYYY-MM-DD` exact window end (default: today) |
+| `limit` | number | No | Max top queries to return (default: 15, max: 100) |
+
+### Response includes
+
+- Total impressions and clicks for the window (computed from daily property totals)
+- Average CTR and average position
+- Top queries with per-query impressions, clicks, CTR, and position
+- Daily impressions/clicks breakdown
+
+For period comparisons ("this month vs last month"), call the tool twice with two exact windows and compare the results.
+
+---
+
+## ranked_get_analytics_metrics
+
+Get Google Analytics traffic data. Requires the project to have Google Analytics connected. GA aggregates in the property's timezone, so today and yesterday can be partial.
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `project_id` | string | Yes | Project UUID |
+| `days` | number | No | Trailing window in days (default: 30, max: 500). Ignored when `start_date` is set |
+| `start_date` | string | No | `YYYY-MM-DD` exact window start, overrides `days` |
+| `end_date` | string | No | `YYYY-MM-DD` exact window end (default: today) |
+
+### Response includes
+
+- Sessions, users, page views, and bounce rate for the window
+- Daily sessions/users breakdown
+- Channel breakdown (organic, direct, referral, ...) with sessions, users, and new users
+

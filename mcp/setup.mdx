@@ -32,35 +32,38 @@ What's my AI visibility across all models?
 Show me my latest audit results
 ```
 
-## Claude Desktop
+## Claude
 
-Add to your Claude Desktop MCP config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
-
-```json
-{
-  "mcpServers": {
-    "ranked-ai": {
-      "url": "https://app.ranked.ai/api/mcp/sse"
-    }
-  }
-}
-```
-
-You'll be prompted to authorize on first use.
+1. Open **Settings > Connectors** (claude.ai or Claude Desktop)
+2. Click **Add custom connector**
+3. Enter `https://app.ranked.ai/api/mcp` as the server URL
+4. Sign in with your Ranked AI account when prompted
 
 ## Cursor
 
 1. Open **Cursor Settings > MCP**
-2. Add a new MCP server with URL: `https://app.ranked.ai/api/mcp/sse`
+2. Add a new MCP server with URL: `https://app.ranked.ai/api/mcp`
 3. Authenticate when prompted
+
+## Server URL
+
+The MCP endpoint is:
+
+```
+https://app.ranked.ai/api/mcp
+```
+
+The previous URL, `https://app.ranked.ai/api/mcp/sse`, keeps working forever — existing connections don't need to change. Use `/api/mcp` for new setups.
+
+The server supports Streamable HTTP and the stateless 2026-07-28 MCP revision, and negotiates the protocol version your client requests.
 
 ## Authentication
 
 The MCP integration uses **OAuth 2.0** with authorization code flow. When you first connect, you'll be redirected to sign in with your Ranked AI account. Access tokens are automatically refreshed.
 
-- Access tokens expire after 24 hours
-- Refresh tokens last 30 days
-- Scope: `read:projects` (read access to all project data)
+- Access tokens expire after 30 days
+- Refresh tokens last 1 year
+- Scopes: `read:projects`, `read:keywords`, `read:audits`, `read:backlinks`, `read:content`, `read:ai`
 
 <Info>
   The MCP integration has read and write access to your project data. Write actions (like approving content) show a confirmation prompt before executing.

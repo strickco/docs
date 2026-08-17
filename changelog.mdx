@@ -4,6 +4,35 @@ description: "Updates and changes to the Ranked AI API"
 icon: "clock-rotate-left"
 ---
 
+## August 2026
+
+### MCP: modern protocol support, new endpoint URL, and traffic tools
+
+**New canonical endpoint**
+
+The MCP server now lives at `https://app.ranked.ai/api/mcp`. The previous URL (`/api/mcp/sse`) keeps working forever — existing connections don't need to change. Use the new URL for new setups.
+
+**Modern protocol support**
+
+The server now speaks the current MCP revisions alongside the legacy ones:
+
+- Supports the stateless `2026-07-28` revision, including `server/discover`
+- Negotiates the protocol version your client requests (`2025-03-26` through `2026-07-28`; legacy `2024-11-05` clients are unaffected)
+- Fixes connection failures in clients that rolled out the 2026 spec — most visibly Claude custom connectors, which could complete OAuth but never finish connecting
+
+**New tools**
+
+- `ranked_get_search_console_metrics` — Google Search Console impressions, clicks, CTR, and top queries over any window (trailing days or exact dates)
+- `ranked_get_analytics_metrics` — Google Analytics sessions, users, page views, and channel breakdown over any window
+
+The MCP integration is now 21 tools (11 read, 10 write).
+
+**Faster and smoother**
+
+- `ranked_get_project_overview` answers several times faster (its queries now run in parallel)
+- The server returns usage instructions with the handshake, so connected AI tools use the right call order on the first try
+- Rate limiting no longer applies to connection handshakes, only to tool calls
+
 ## May 2026
 
 ### v1.0 — Initial Release

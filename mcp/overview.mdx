@@ -16,12 +16,13 @@ The **Model Context Protocol** (MCP) lets AI tools like ChatGPT, Claude, and Cur
 | **Audits** | Get audit results with issue counts by severity. Run new audits |
 | **Backlinks** | View referring domains, new/lost tracking, dofollow/nofollow breakdown |
 | **Content** | Browse content calendar, approve articles, request revisions, submit topics |
+| **Traffic** | Google Search Console impressions, clicks, and top queries; Google Analytics sessions, users, and channels |
 | **Reports** | Generate shareable SEO report links |
 | **Heatmaps** | View local SEO ranking heatmap data |
 
 ## Available tools
 
-### Read tools (10)
+### Read tools (11)
 
 | Tool | Description |
 |------|-------------|
@@ -34,8 +35,10 @@ The **Model Context Protocol** (MCP) lets AI tools like ChatGPT, Claude, and Cur
 | `ranked_get_content_calendar` | Content items filtered by status with scheduling info |
 | `ranked_get_heatmaps` | Local SEO ranking and competition heatmaps |
 | `ranked_get_sitemap_indexing` | Sitemap URLs and Google indexing status |
+| `ranked_get_search_console_metrics` | Google Search Console impressions, clicks, CTR, and top queries over any window |
+| `ranked_get_analytics_metrics` | Google Analytics sessions, users, page views, and channel breakdown over any window |
 
-### Write tools (8)
+### Write tools (10)
 
 | Tool | Description |
 |------|-------------|
@@ -47,3 +50,5 @@ The **Model Context Protocol** (MCP) lets AI tools like ChatGPT, Claude, and Cur
 | `ranked_request_revision` | Request a content revision with notes |
 | `ranked_generate_report` | Create a shareable SEO report link |
 | `ranked_run_audit` | Start a new site audit |
+| `ranked_update_content_preferences` | Update the project's content writing preferences |
+| `ranked_update_publishing_preferences` | Update the project's publishing preferences |
